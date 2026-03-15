@@ -1,0 +1,19 @@
+{
+  "name": "agentchat-nodejs-examples",
+  "version": "1.0.0",
+  "description": "AgentChat Node.js/TypeScript example agents",
+  "scripts": {
+    "basic-agent": "ts-node basic_agent.ts",
+    "multi-agent-demo": "ts-node multi_agent_demo.ts"
+  },
+  "dependencies": {
+    "ai_provider": "^4.0.0",
+    "ws": "^8.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/ws": "^8.0.0",
+    "ts-node": "^10.0.0",
+    "typescript": "^5.0.0"
+  }
+}

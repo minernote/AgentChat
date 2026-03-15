@@ -1,0 +1,88 @@
+.bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  padding: 0.6rem 0.875rem;
+  background: #080d17;
+  border-top: 1px solid rgba(126, 184, 255, 0.06);
+  flex-shrink: 0;
+}
+
+.inputWrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+}
+
+.encIndicator {
+  position: absolute;
+  left: 0.6rem;
+  bottom: 0.55rem;
+  font-size: 0.65rem;
+  color: rgba(0, 212, 170, 0.4);
+  pointer-events: none;
+  z-index: 1;
+  line-height: 1;
+}
+
+.input {
+  flex: 1;
+  background: #050810;
+  border: 1px solid rgba(126, 184, 255, 0.1);
+  border-radius: 5px;
+  padding: 0.55rem 0.75rem 0.55rem 1.75rem;
+  color: #a8c8e8;
+  font-size: 0.82rem;
+  resize: none;
+  outline: none;
+  line-height: 1.45;
+  min-height: 36px;
+  max-height: 120px;
+  overflow-y: auto;
+  font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  letter-spacing: 0.02em;
+}
+
+.input::placeholder {
+  color: #1a2e45;
+  letter-spacing: 0.04em;
+  font-size: 0.75rem;
+}
+
+.input:focus {
+  border-color: rgba(0, 212, 170, 0.3);
+  box-shadow: 0 0 0 1px rgba(0, 212, 170, 0.08), 0 0 12px rgba(0, 212, 170, 0.05);
+}
+
+.input:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.sendBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  background: rgba(0, 212, 170, 0.1);
+  border: 1px solid rgba(0, 212, 170, 0.2);
+  color: #00d4aa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.sendBtn:hover:not(:disabled) {
+  background: rgba(0, 212, 170, 0.18);
+  border-color: rgba(0, 212, 170, 0.4);
+  box-shadow: 0 0 8px rgba(0, 212, 170, 0.2);
+}
+
+.sendBtn:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+}

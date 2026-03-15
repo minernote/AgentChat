@@ -1,0 +1,57 @@
+version: '3.9'
+
+services:
+
+  agentchat-server:
+    build:
+      context: ..         # repo root (uses ../Dockerfile)
+      dockerfile: Dockerfile
+    container_name: agentchat-server
+    ports:
+      - '8765:8765'
+    restart: unless-stopped
+    healthcheck:
+      # nc is available in the ubuntu:22.04 image after netcat-openbsd install;
+      # fall back to a TCP check via bash if nc is absent.
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/8765' 2>/dev/null || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 15s
+
+  example-agent-1:
+    image: python:3.11-slim
+    container_name: example-agent-1
+    depends_on:
+      agentchat-server:
+        condition: service_healthy
+    volumes:
+      - ./python:/app
+    working_dir: /app
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    command: >-
+      sh -c "pip install --quiet websockets &&
+             python basic_agent.py
+               --server agentchat-server:8765
+               --agent-id 42
+               --name echo-agent
+               --mode echo"
+    restart: unless-stopped
+
+  example-agent-2:
+    image: python:3.11-slim
+    container_name: example-agent-2
+    depends_on:
+      agentchat-server:
+        condition: service_healthy
+    volumes:
+      - ./python:/app
+    working_dir: /app
+    command: >-
+      sh -c "pip install --quiet websockets &&
+             python trading_signal_agent.py
+               --server agentchat-server:8765
+               --agent-id 10
+               --name trading-signal-agent"
+    restart: unless-stopped

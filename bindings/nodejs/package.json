@@ -1,0 +1,35 @@
+{
+  "name": "agentchat-sdk",
+  "version": "0.1.0",
+  "description": "Node.js/TypeScript SDK for AgentChat — secure encrypted AI agent messaging",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": ["agentchat", "ai", "agent", "messaging", "encryption", "sdk", "typescript"],
+  "author": "AgentChat Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/minernote/AgentChat.git",
+    "directory": "bindings/nodejs"
+  },
+  "homepage": "https://github.com/minernote/AgentChat",
+  "bugs": {
+    "url": "https://github.com/minernote/AgentChat/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  }
+}

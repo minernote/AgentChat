@@ -1,0 +1,167 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-linux-x64:
+    name: Build linux-x64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y cmake libssl-dev libsqlite3-dev
+
+      - name: Build release
+        run: |
+          mkdir -p build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release
+          make -j4
+
+      - name: Package
+        run: |
+          mkdir -p dist
+          cp build/agentchat_server dist/agentchat_server-linux-x64 2>/dev/null || true
+          cp build/agentchat_client dist/agentchat_client-linux-x64 2>/dev/null || true
+          tar -czf agentchat-${{ github.ref_name }}-linux-x64.tar.gz -C dist .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: agentchat-linux-x64
+          path: agentchat-${{ github.ref_name }}-linux-x64.tar.gz
+
+  build-macos-arm64:
+    name: Build macos-arm64
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: brew install cmake openssl sqlite3
+
+      - name: Build release
+        run: |
+          mkdir -p build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=arm64
+          make -j4
+
+      - name: Package
+        run: |
+          mkdir -p dist
+          cp build/agentchat_server dist/agentchat_server-macos-arm64 2>/dev/null || true
+          cp build/agentchat_client dist/agentchat_client-macos-arm64 2>/dev/null || true
+          tar -czf agentchat-${{ github.ref_name }}-macos-arm64.tar.gz -C dist .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: agentchat-macos-arm64
+          path: agentchat-${{ github.ref_name }}-macos-arm64.tar.gz
+
+  build-macos-x64:
+    name: Build macos-x64
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: brew install cmake openssl sqlite3
+
+      - name: Build release
+        run: |
+          mkdir -p build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=x86_64
+          make -j4
+
+      - name: Package
+        run: |
+          mkdir -p dist
+          cp build/agentchat_server dist/agentchat_server-macos-x64 2>/dev/null || true
+          cp build/agentchat_client dist/agentchat_client-macos-x64 2>/dev/null || true
+          tar -czf agentchat-${{ github.ref_name }}-macos-x64.tar.gz -C dist .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: agentchat-macos-x64
+          path: agentchat-${{ github.ref_name }}-macos-x64.tar.gz
+
+  publish-pypi:
+    name: Publish Python SDK to PyPI
+    needs: [ build-linux-x64, build-macos-arm64, build-macos-x64 ]
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install build tools
+        run: pip install build twine
+
+      - name: Build Python SDK
+        working-directory: bindings/python
+        run: python -m build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: bindings/python/dist/
+
+  publish-npm:
+    name: Publish Node.js SDK to npm
+    needs: [ build-linux-x64, build-macos-arm64, build-macos-x64 ]
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install and build
+        working-directory: bindings/nodejs
+        run: |
+          npm ci
+          npm run build
+
+      - name: Publish to npm
+        working-directory: bindings/nodejs
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  release:
+    name: Create GitHub Release
+    needs: [ build-linux-x64, build-macos-arm64, build-macos-x64, publish-pypi, publish-npm ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*.tar.gz
+          generate_release_notes: true
