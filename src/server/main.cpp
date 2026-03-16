@@ -1376,13 +1376,26 @@ int main(int argc, char* argv[]) {
                 auto wit = g_ws_clients.find(fd);
                 if (wit != g_ws_clients.end()) {
                     WsConn& wc = *wit->second;
-                    if (wc.registered)
+                    if (wc.registered) {
                         std::cout << "[ws] Agent " << wc.agent_id
                                   << " (" << wc.agent_name << ") disconnected\n";
-                    else
+                        // Broadcast agent_status offline for WS-native agents
+                        std::ostringstream ws_off;
+                        ws_off << "{\"type\":\"agent_status\""
+                               << ",\"agent_id\":" << wc.agent_id
+                               << ",\"online\":false"
+                               << ",\"name\":\"" << ws_json::esc(wc.agent_name) << "\"}";
+                        // Erase before broadcast so disconnected client doesn't receive it
+                        uint64_t off_id = wc.agent_id;
+                        std::string off_ev = ws_off.str();
+                        ::close(fd);
+                        g_ws_clients.erase(wit);
+                        ws_broadcast(off_ev);
+                    } else {
                         std::cout << "[ws] Client " << wc.peer_addr << " disconnected\n";
-                    ::close(fd);
-                    g_ws_clients.erase(wit);
+                        ::close(fd);
+                        g_ws_clients.erase(wit);
+                    }
                     ws_push_agent_list();
                     continue;
                 }
