@@ -1,85 +1,75 @@
-/**
- * Identicon — deterministic geometric avatar from agent_id.
- * Uses a simple hash to pick colors + a 5×5 symmetric grid pattern.
- */
-import React from 'react';
+import React, { useMemo } from 'react';
 
-interface IdenticonProps {
+interface Props {
   agentId: number;
   size?: number;
   className?: string;
 }
 
-/** Fast integer hash (32-bit FNV-1a variant over the decimal string) */
-function hash32(n: number): number {
-  let h = 0x811c9dc5;
-  const s = String(n);
-  for (let i = 0; i < s.length; i++) {
-    h ^= s.charCodeAt(i);
-    h = Math.imul(h, 0x01000193);
+// Deterministic hash from agent_id
+function hash(n: number): number[] {
+  // Simple LCG-based expand: produce 8 pseudo-random bytes from agent_id
+  const state: number[] = [];
+  let s = (n * 2654435761) >>> 0; // Knuth multiplicative hash
+  for (let i = 0; i < 8; i++) {
+    s = Math.imul(s ^ (s >>> 16), 0x45d9f3b) >>> 0;
+    s = Math.imul(s ^ (s >>> 16), 0x45d9f3b) >>> 0;
+    s = (s ^ (s >>> 16)) >>> 0;
+    state.push(s & 0xff);
   }
-  return h >>> 0;
+  return state;
 }
 
-function hslToHex(h: number, s: number, l: number): string {
-  s /= 100;
-  l /= 100;
-  const a = s * Math.min(l, 1 - l);
-  const f = (n: number) => {
-    const k = (n + h / 30) % 12;
-    const c = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-    return Math.round(255 * c).toString(16).padStart(2, '0');
-  };
-  return `#${f(0)}${f(8)}${f(4)}`;
+// Convert hue/sat/light to css hsl
+function hsl(h: number, s: number, l: number) {
+  return `hsl(${h},${s}%,${l}%)`;
 }
 
-export function Identicon({ agentId, size = 36, className }: IdenticonProps) {
-  const h0 = hash32(agentId);
-  const h1 = hash32(agentId ^ 0xdeadbeef);
+export function Identicon({ agentId, size = 36, className }: Props) {
+  const svg = useMemo(() => {
+    const h = hash(agentId);
 
-  const hue = h0 % 360;
-  const fg = hslToHex(hue, 65, 50);
-  const bg = hslToHex(hue, 20, 92);
+    // Derive palette: 2 complementary colors
+    const hue1 = (h[0] / 255) * 360;
+    const hue2 = (hue1 + 150 + (h[1] / 255) * 60) % 360;
+    const bg = hsl(hue1, 60, 30);
+    const fg = hsl(hue2, 80, 70);
 
-  const cells: boolean[] = [];
-  for (let row = 0; row < 5; row++) {
-    for (let col = 0; col < 3; col++) {
-      const bit = (h1 >> (row * 3 + col)) & 1;
-      cells.push(bit === 1);
+    // 5x5 symmetric grid (left half mirrored): bits from h[2..5]
+    // cols 0-1 mirrored to cols 4-3, col 2 center
+    const cells: boolean[] = [];
+    const bits = (h[2] << 24) | (h[3] << 16) | (h[4] << 8) | h[5];
+    for (let row = 0; row < 5; row++) {
+      for (let col = 0; col < 3; col++) {
+        cells[row * 5 + col] = Boolean((bits >> (row * 3 + col)) & 1);
+      }
+      // Mirror
+      cells[row * 5 + 3] = cells[row * 5 + 1];
+      cells[row * 5 + 4] = cells[row * 5 + 0];
     }
-  }
 
-  const cellSize = size / 5;
-  const rects: React.ReactElement[] = [];
+    const cell = size / 5;
+    const rects = cells
+      .map((on, i) => {
+        if (!on) return null;
+        const col = i % 5;
+        const row = Math.floor(i / 5);
+        return `<rect x="${col * cell}" y="${row * cell}" width="${cell}" height="${cell}" fill="${fg}" />`;
+      })
+      .filter(Boolean)
+      .join('');
 
-  for (let row = 0; row < 5; row++) {
-    for (let col = 0; col < 5; col++) {
-      const srcCol = col < 3 ? col : 4 - col;
-      if (!cells[row * 3 + srcCol]) continue;
-      rects.push(
-        <rect
-          key={`${row}-${col}`}
-          x={col * cellSize}
-          y={row * cellSize}
-          width={cellSize}
-          height={cellSize}
-          fill={fg}
-        />,
-      );
-    }
-  }
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+  <rect width="${size}" height="${size}" fill="${bg}" rx="${size * 0.15}" />
+  ${rects}
+</svg>`;
+  }, [agentId, size]);
 
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox={`0 0 ${size} ${size}`}
+    <div
       className={className}
-      style={{ borderRadius: '6px', flexShrink: 0, display: 'block' }}
-      aria-label={`Agent ${agentId} avatar`}
-    >
-      <rect width={size} height={size} fill={bg} />
-      {rects}
-    </svg>
+      style={{ width: size, height: size, flexShrink: 0 }}
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
   );
 }
