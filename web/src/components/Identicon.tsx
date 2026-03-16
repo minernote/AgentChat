@@ -2,6 +2,7 @@
  * Identicon — deterministic geometric avatar from agent_id.
  * Uses a simple hash to pick colors + a 5×5 symmetric grid pattern.
  */
+import React from 'react';
 
 interface IdenticonProps {
   agentId: number;
@@ -17,7 +18,7 @@ function hash32(n: number): number {
     h ^= s.charCodeAt(i);
     h = Math.imul(h, 0x01000193);
   }
-  return h >>> 0; // unsigned 32-bit
+  return h >>> 0;
 }
 
 function hslToHex(h: number, s: number, l: number): string {
@@ -27,9 +28,7 @@ function hslToHex(h: number, s: number, l: number): string {
   const f = (n: number) => {
     const k = (n + h / 30) % 12;
     const c = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-    return Math.round(255 * c)
-      .toString(16)
-      .padStart(2, '0');
+    return Math.round(255 * c).toString(16).padStart(2, '0');
   };
   return `#${f(0)}${f(8)}${f(4)}`;
 }
@@ -38,12 +37,10 @@ export function Identicon({ agentId, size = 36, className }: IdenticonProps) {
   const h0 = hash32(agentId);
   const h1 = hash32(agentId ^ 0xdeadbeef);
 
-  // Foreground colour: vibrant HSL
   const hue = h0 % 360;
   const fg = hslToHex(hue, 65, 50);
   const bg = hslToHex(hue, 20, 92);
 
-  // 5×5 grid, left half random, mirrored to right (symmetric)
   const cells: boolean[] = [];
   for (let row = 0; row < 5; row++) {
     for (let col = 0; col < 3; col++) {
@@ -57,7 +54,6 @@ export function Identicon({ agentId, size = 36, className }: IdenticonProps) {
 
   for (let row = 0; row < 5; row++) {
     for (let col = 0; col < 5; col++) {
-      // Mirror: col 0-2 from cells, col 3 mirrors col 1, col 4 mirrors col 0
       const srcCol = col < 3 ? col : 4 - col;
       if (!cells[row * 3 + srcCol]) continue;
       rects.push(
@@ -84,10 +80,6 @@ export function Identicon({ agentId, size = 36, className }: IdenticonProps) {
     >
       <rect width={size} height={size} fill={bg} />
       {rects}
-    </svg>
-  );
-}
-}
     </svg>
   );
 }
