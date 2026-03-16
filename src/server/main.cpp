@@ -649,6 +649,16 @@ static void handle_send_message(ClientConn& c, const std::vector<uint8_t>& pload
             for (size_t i = 0; i < caps.size(); ++i) { if (i) std::cout << ","; std::cout << caps[i]; }
             std::cout << "]\n";
 
+            // Re-broadcast agent_status with name now that REGISTER_AGENT has set it
+            {
+                std::ostringstream name_ev;
+                name_ev << "{\"type\":\"agent_status\""
+                        << ",\"agent_id\":" << c.agent_id
+                        << ",\"online\":true"
+                        << ",\"name\":\"" << name << "\"}";
+                ws_broadcast(name_ev.str());
+            }
+
             std::vector<uint8_t> rack;
             protocol::pack_u64(rack, c.agent_id);
             queue_frame(c, protocol::PacketType::REGISTER_ACK, rack);
