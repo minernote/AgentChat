@@ -180,3 +180,148 @@
   background: var(--primary);
   color: #fff;
 }
+
+/* Header */
+.header {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-sidebar);
+}
+
+.myProfile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.myAvatar {
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.myInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.myName {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.myId {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.onlineDot {
+  color: var(--online-green);
+  font-size: 8px;
+}
+
+.settingsBtn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  cursor: pointer;
+  transition: background var(--transition);
+  flex-shrink: 0;
+}
+
+.settingsBtn:hover {
+  background: var(--primary-light);
+}
+
+/* Settings dropdown */
+.settingsMenu {
+  position: absolute;
+  top: 60px;
+  left: 8px;
+  right: 8px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.settingsItem {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.settingsDivider {
+  height: 1px;
+  background: var(--border-light);
+  margin: 4px 0;
+}
+
+.logoutBtn {
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-size: 13px;
+  color: #ef4444;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.logoutBtn:hover {
+  background: #fef2f2;
+}
+
+/* Online badge */
+.onlineBadge {
+  font-size: 10px;
+  background: var(--online-green);
+  color: white;
+  border-radius: var(--radius-full);
+  padding: 1px 6px;
+  margin-left: 6px;
+  font-weight: 600;
+}
+
+/* Online/offline dots on avatar */
+.onlineDotBadge {
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  width: 10px;
+  height: 10px;
+  background: var(--online-green);
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.offlineDotBadge {
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  width: 10px;
+  height: 10px;
+  background: var(--text-muted);
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.emptyState {
+  padding: 16px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+}
