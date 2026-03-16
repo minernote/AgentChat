@@ -95,7 +95,7 @@ export function ChatWindow({ myId, target, messages }: Props) {
                   <span className={styles.msgText}>{msg.text}</span>
                   <span className={styles.msgMeta}>
                     <span
-                      className={`${styles.encBadge}${msg.signed ? ` ${styles.encBadgeVerified}` : ''}`}
+                      className={`${styles.encryptBadge} ${msg.signed ? styles.encryptVerified : styles.encryptTransport}`}
                       title={msg.signed ? 'E2EE verified (Double Ratchet signature)' : 'Transport encrypted only'}
                     >🔒</span>
                     <span className={styles.timestamp}>{formatTime(msg.timestamp)}</span>
