@@ -6,11 +6,13 @@ import {
   mkChannelMessage,
   mkListAgents,
   mkPing,
+  mkSealedSend,
   parseFrame,
   type ServerMessage,
   type ServerAgentList,
   type ServerAgentStatus,
   type ServerChannelEvent,
+  type ServerSealedSend,
 } from '../utils/protocol';
 import { useMessages } from './useMessages';
 
@@ -24,6 +26,7 @@ export interface UseAgentChatReturn {
   messages: Message[];
   sendText: (text: string, to: number) => void;
   sendChannelText: (text: string, channel: string) => void;
+  sendSealedMessage: (to: number, ciphertext: string) => void;
   disconnect: () => void;
   dmMessages: (peerId: number) => Message[];
   channelMessages: (channel: string) => Message[];
@@ -52,6 +55,11 @@ export function useAgentChat(
     [_dmMessages, agentId],
   );
 
+  const channelMessages = useCallback(
+    (channel: string) => _channelMessages(channel),
+    [_channelMessages],
+  );
+
   const disconnect = useCallback(() => {
     if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
     wsRef.current?.close();
@@ -73,8 +81,6 @@ export function useAgentChat(
       setState('connected');
       ws.send(mkRegister(agentId, agentName));
       ws.send(mkListAgents());
-
-      // Keepalive ping every 25 s
       pingIntervalRef.current = setInterval(() => {
         if (ws.readyState === WebSocket.OPEN) ws.send(mkPing());
       }, 25_000);
@@ -96,6 +102,7 @@ export function useAgentChat(
             type: 'text',
             timestamp: Date.now(),
             replyTo: f.reply_to,
+            signed: f.signed,
           });
           break;
         }
@@ -140,7 +147,6 @@ export function useAgentChat(
             }
             return prev;
           });
-          // System message for join/leave
           if (f.event === 'join' || f.event === 'leave') {
             addMessage({
               from: 0,
@@ -150,6 +156,19 @@ export function useAgentChat(
               timestamp: Date.now(),
             });
           }
+          break;
+        }
+        case 'sealed_send': {
+          // SEALED_SEND (0x13): from_agent_id stripped by server — sender anonymous by design
+          const f = frame as ServerSealedSend;
+          addMessage({
+            from: 0,
+            to: f.to_agent_id,
+            text: f.content,
+            type: 'text',
+            timestamp: f.timestamp ?? Date.now(),
+            signed: false,
+          });
           break;
         }
         case 'error': {
@@ -182,7 +201,6 @@ export function useAgentChat(
     (text: string, to: number) => {
       if (wsRef.current?.readyState !== WebSocket.OPEN) return;
       wsRef.current.send(mkMessage(to, text));
-      // Optimistically add own message
       addMessage({
         from: agentId,
         to,
@@ -209,6 +227,15 @@ export function useAgentChat(
     [agentId, addMessage],
   );
 
+  const sendSealedMessage = useCallback(
+    (to: number, ciphertext: string) => {
+      if (wsRef.current?.readyState !== WebSocket.OPEN) return;
+      // Do NOT optimistically add — sender is anonymous to server log
+      wsRef.current.send(mkSealedSend(to, ciphertext));
+    },
+    [],
+  );
+
   return {
     state,
     error,
@@ -217,8 +244,9 @@ export function useAgentChat(
     messages,
     sendText,
     sendChannelText,
+    sendSealedMessage,
     disconnect,
     dmMessages,
-    channelMessages: _channelMessages,
+    channelMessages,
   };
 }
