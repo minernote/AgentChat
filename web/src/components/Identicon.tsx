@@ -47,7 +47,6 @@ interface Props {
 export function Identicon({ agentId, size = 32, className }: Props) {
   const { cells, color } = identiconData(agentId);
   const COLS = 5;
-  const ROWS = 5;
   const pad = Math.round(size * 0.1);
   const cellSize = (size - pad * 2) / COLS;
 
