@@ -85,9 +85,7 @@ export function ChatWindow({ myId, target, messages }: Props) {
               className={`${styles.msgRow} ${isOwn ? styles.ownRow : styles.theirRow}`}
             >
               {!isOwn && (
-                <div className={styles.avatar}>
-                  {String(msg.from).slice(-2)}
-                </div>
+                <Identicon agentId={msg.from} size={32} />
               )}
               <div className={styles.bubble__wrap}>
                 {!isOwn && (
@@ -96,21 +94,13 @@ export function ChatWindow({ myId, target, messages }: Props) {
                 <div className={`${styles.bubble} ${isOwn ? styles.ownBubble : styles.theirBubble}`}>
                   <span className={styles.msgText}>{msg.text}</span>
                   <span className={styles.msgMeta}>
-                    <span className={styles.encBadge}>🔒</span>
+                    <span
+                      className={`${styles.encBadge}${msg.signed ? ` ${styles.encBadgeVerified}` : ''}`}
+                      title={msg.signed ? 'E2EE verified (Double Ratchet signature)' : 'Transport encrypted only'}
+                    >🔒</span>
                     <span className={styles.timestamp}>{formatTime(msg.timestamp)}</span>
                     {isOwn && <StatusIcon status={msg.status} />}
                   </span>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-        <div ref={bottomRef} />
-      </div>
-    </div>
-  );
-}
-             </span>
                 </div>
               </div>
             </div>
