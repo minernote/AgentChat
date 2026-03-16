@@ -53,7 +53,7 @@ export function Identicon({ agentId, size = 36, className }: IdenticonProps) {
   }
 
   const cellSize = size / 5;
-  const rects: JSX.Element[] = [];
+  const rects: React.ReactElement[] = [];
 
   for (let row = 0; row < 5; row++) {
     for (let col = 0; col < 5; col++) {
@@ -84,6 +84,10 @@ export function Identicon({ agentId, size = 36, className }: IdenticonProps) {
     >
       <rect width={size} height={size} fill={bg} />
       {rects}
+    </svg>
+  );
+}
+}
     </svg>
   );
 }
