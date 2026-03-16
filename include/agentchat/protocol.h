@@ -80,6 +80,9 @@ enum class PacketType : uint8_t {
     GROUP_MSG         = 0x61,  ///< Client → Server / Server → Client: group-encrypted channel message
     GROUP_KEY_REQUEST = 0x62,  ///< Client → Server: request current group key for a channel
 
+    // Privacy
+    SEALED_SEND     = 0x70,  ///< Client → Server: encrypted DM with sender identity hidden (from_agent_id stripped before relay)
+
     // Keepalive
     PING            = 0xF0,
     PONG            = 0xF1,

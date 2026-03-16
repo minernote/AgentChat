@@ -586,7 +586,84 @@ static void handle_send_message(ClientConn& c, const std::vector<uint8_t>& pload
     std::cout << "[server] MSG " << mid << " from " << c.agent_id
               << " -> " << (to_ch ? "ch#" : "agent#")
               << (to_ch ? to_ch : to_agent) << "\n";
-}static bool dispatch_packet(ClientConn& c,
+}
+
+// Sealed Sender: identical to handle_send_message but from_agent_id is
+// stripped before relay — server never records or logs who sent it.
+static void handle_sealed_send(ClientConn& c, const std::vector<uint8_t>& pload) {
+    size_t moff = 0;
+    std::span<const uint8_t> mp{pload};
+    uint64_t to_agent = 0, to_ch = 0;
+    if (!protocol::unpack_u64(mp, moff, to_agent)) return;
+    if (!protocol::unpack_u64(mp, moff, to_ch)) return;
+
+    uint8_t msg_type_raw = 0;
+    if (moff >= pload.size()) return;
+    msg_type_raw = pload[moff++];
+
+    std::vector<uint8_t> encrypted_payload, nonce;
+    if (!protocol::unpack_blob(mp, moff, encrypted_payload)) return;
+    if (!protocol::unpack_blob(mp, moff, nonce)) return;
+
+    // Trust checks (same as SEND_MESSAGE)
+    {
+        auto trust_it = g_agent_trust.find(c.agent_id);
+        TrustLevel trust = (trust_it != g_agent_trust.end()) ? trust_it->second : TrustLevel::UNKNOWN;
+        if (trust == TrustLevel::BLOCKED) {
+            queue_error(c, protocol::ErrorCode::AUTH_FAILED, "agent is blocked");
+            return;
+        }
+        if (trust == TrustLevel::UNKNOWN) {
+            queue_error(c, protocol::ErrorCode::AUTH_FAILED,
+                        "agent trust level is UNKNOWN — must call register_agent first");
+            return;
+        }
+    }
+
+    static std::atomic<uint64_t> g_sealed_msg_id{0x8000000000000000ULL};
+    uint64_t mid = g_sealed_msg_id.fetch_add(1);
+    uint64_t seqno = c.send_seqno++;
+
+    // Build RECV_MESSAGE with from=0 — sender identity stripped
+    std::vector<uint8_t> recv_pkt;
+    protocol::pack_u64(recv_pkt, 0);                   // from: 0 = anonymous
+    protocol::pack_u64(recv_pkt, to_ch);               // channel (0 for DM)
+    recv_pkt.push_back(msg_type_raw);
+    protocol::pack_blob(recv_pkt, std::span<const uint8_t>{encrypted_payload});
+    protocol::pack_u64(recv_pkt, mid);
+    protocol::pack_u64(recv_pkt, seqno);
+
+    if (to_agent == 0) {
+        queue_error(c, protocol::ErrorCode::UNKNOWN, "sealed_send requires to_agent != 0");
+        return;
+    }
+
+    auto it = g_agents.find(to_agent);
+    if (it == g_agents.end() || !it->second) {
+        if (g_db) {
+            g_db->offline().store_offline(
+                static_cast<uint64_t>(to_agent),
+                0, // from: anonymous
+                recv_pkt);
+        }
+        std::vector<uint8_t> ack_pkt;
+        protocol::pack_u64(ack_pkt, mid);
+        protocol::pack_u16(ack_pkt, static_cast<uint16_t>(DeliveryStatus::SENT));
+        queue_frame(c, protocol::PacketType::ACK, ack_pkt);
+        return;
+    }
+    queue_frame(*it->second, protocol::PacketType::RECV_MESSAGE, recv_pkt);
+
+    std::vector<uint8_t> ack_pkt;
+    protocol::pack_u64(ack_pkt, mid);
+    protocol::pack_u16(ack_pkt, static_cast<uint16_t>(DeliveryStatus::DELIVERED));
+    queue_frame(c, protocol::PacketType::ACK, ack_pkt);
+
+    // Intentionally no sender logged
+    std::cout << "[server] SEALED_MSG " << mid << " -> agent#" << to_agent << "\n";
+}
+
+static bool dispatch_packet(ClientConn& c,
                             protocol::PacketType type,
                             const std::vector<uint8_t>& payload) {
     if (!c.authenticated()) {
@@ -616,6 +693,9 @@ static void handle_send_message(ClientConn& c, const std::vector<uint8_t>& pload
     switch (type) {
         case protocol::PacketType::SEND_MESSAGE:
             handle_send_message(c, payload);
+            break;
+        case protocol::PacketType::SEALED_SEND:
+            handle_sealed_send(c, payload);
             break;
         case protocol::PacketType::REGISTER_AGENT: {
             size_t roff = 0;
