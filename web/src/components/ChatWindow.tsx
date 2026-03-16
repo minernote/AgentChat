@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { Message, ChatTarget } from '../types';
 import styles from './ChatWindow.module.css';
+import { Identicon } from './Identicon';
 
 interface Props {
   myId: number;
@@ -99,6 +100,17 @@ export function ChatWindow({ myId, target, messages }: Props) {
                     <span className={styles.timestamp}>{formatTime(msg.timestamp)}</span>
                     {isOwn && <StatusIcon status={msg.status} />}
                   </span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+        <div ref={bottomRef} />
+      </div>
+    </div>
+  );
+}
+             </span>
                 </div>
               </div>
             </div>
