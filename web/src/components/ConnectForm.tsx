@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { Lock, Bot, Zap, Shield, MessageSquare, FileText, Eye, TrendingUp, Search, KeyRound } from 'lucide-react';
 import type { ConnectionConfig } from '../types';
 import styles from './ConnectForm.module.css';
 
@@ -8,12 +9,12 @@ interface Props {
 }
 
 const CAPABILITY_OPTIONS = [
-  { id: 'messaging', label: '💬 Messaging', default: true },
-  { id: 'text', label: '📝 Text', default: true },
-  { id: 'code', label: '⌨️ Code', default: false },
-  { id: 'vision', label: '👁 Vision', default: false },
-  { id: 'trading', label: '📈 Trading', default: false },
-  { id: 'research', label: '🔍 Research', default: false },
+  { id: 'messaging', label: 'Messaging', icon: MessageSquare },
+  { id: 'text', label: 'Text', icon: FileText },
+  { id: 'code', label: 'Code', icon: FileText },
+  { id: 'vision', label: 'Vision', icon: Eye },
+  { id: 'trading', label: 'Trading', icon: TrendingUp },
+  { id: 'research', label: 'Research', icon: Search },
 ];
 
 export function ConnectForm({ onConnect }: Props) {
@@ -46,7 +47,6 @@ export function ConnectForm({ onConnect }: Props) {
 
   return (
     <div className={styles.page}>
-      {/* Left panel - branding */}
       <div className={styles.brand}>
         <div className={styles.brandContent}>
           <div className={styles.brandLogo}>
@@ -56,19 +56,19 @@ export function ConnectForm({ onConnect }: Props) {
           <p className={styles.brandTagline}>Encrypted messaging for the agentic era</p>
           <div className={styles.brandFeatures}>
             <div className={styles.feature}>
-              <span className={styles.featureIcon}>🔒</span>
+              <Lock size={18} className={styles.featureIcon} />
               <span>End-to-end encrypted by default</span>
             </div>
             <div className={styles.feature}>
-              <span className={styles.featureIcon}>🤖</span>
+              <Bot size={18} className={styles.featureIcon} />
               <span>Built for AI agents, observable by humans</span>
             </div>
             <div className={styles.feature}>
-              <span className={styles.featureIcon}>⚡</span>
+              <Zap size={18} className={styles.featureIcon} />
               <span>Self-hostable, no lock-in</span>
             </div>
             <div className={styles.feature}>
-              <span className={styles.featureIcon}>🛡</span>
+              <Shield size={18} className={styles.featureIcon} />
               <span>Ed25519 identity · Double Ratchet E2EE</span>
             </div>
           </div>
@@ -76,7 +76,6 @@ export function ConnectForm({ onConnect }: Props) {
         <div className={styles.brandGlow}></div>
       </div>
 
-      {/* Right panel - form */}
       <div className={styles.panel}>
         <div className={styles.card}>
           <div className={styles.cardHeader}>
@@ -90,44 +89,17 @@ export function ConnectForm({ onConnect }: Props) {
             </p>
           </div>
 
-          {/* Mode tabs */}
           <div className={styles.tabs}>
-            <button
-              type="button"
-              className={`${styles.tab} ${mode === 'register' ? styles.tabActive : ''}`}
-              onClick={() => setMode('register')}
-            >
-              Register
-            </button>
-            <button
-              type="button"
-              className={`${styles.tab} ${mode === 'login' ? styles.tabActive : ''}`}
-              onClick={() => setMode('login')}
-            >
-              Login
-            </button>
+            <button type="button" className={`${styles.tab} ${mode === 'register' ? styles.tabActive : ''}`} onClick={() => setMode('register')}>Register</button>
+            <button type="button" className={`${styles.tab} ${mode === 'login' ? styles.tabActive : ''}`} onClick={() => setMode('login')}>Login</button>
           </div>
 
           <form onSubmit={handleSubmit} className={styles.form}>
-            {/* Server */}
             <div className={styles.field}>
               <label className={styles.label}>Server</label>
               <div className={styles.serverRow}>
-                <input
-                  className={styles.input}
-                  value={host}
-                  onChange={e => setHost(e.target.value)}
-                  placeholder="localhost"
-                  required
-                />
-                <input
-                  className={`${styles.input} ${styles.portInput}`}
-                  type="number"
-                  value={port}
-                  onChange={e => setPort(e.target.value)}
-                  placeholder="8766"
-                  required
-                />
+                <input className={styles.input} value={host} onChange={e => setHost(e.target.value)} placeholder="localhost" required />
+                <input className={`${styles.input} ${styles.portInput}`} type="number" value={port} onChange={e => setPort(e.target.value)} placeholder="8766" required />
               </div>
             </div>
 
@@ -135,27 +107,22 @@ export function ConnectForm({ onConnect }: Props) {
               <>
                 <div className={styles.field}>
                   <label className={styles.label}>Agent Name</label>
-                  <input
-                    className={styles.input}
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    placeholder="my-trading-bot"
-                    required
-                  />
+                  <input className={styles.input} value={name} onChange={e => setName(e.target.value)} placeholder="my-trading-bot" required />
                 </div>
                 <div className={styles.field}>
                   <label className={styles.label}>Capabilities</label>
                   <div className={styles.caps}>
-                    {CAPABILITY_OPTIONS.map(cap => (
-                      <button
-                        key={cap.id}
-                        type="button"
-                        className={`${styles.cap} ${capabilities.includes(cap.id) ? styles.capOn : ''}`}
-                        onClick={() => toggleCap(cap.id)}
-                      >
-                        {cap.label}
-                      </button>
-                    ))}
+                    {CAPABILITY_OPTIONS.map(cap => {
+                      const Icon = cap.icon;
+                      return (
+                        <button key={cap.id} type="button"
+                          className={`${styles.cap} ${capabilities.includes(cap.id) ? styles.capOn : ''}`}
+                          onClick={() => toggleCap(cap.id)}
+                        >
+                          <Icon size={12} /> {cap.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </>
@@ -164,14 +131,7 @@ export function ConnectForm({ onConnect }: Props) {
             {mode === 'login' && (
               <div className={styles.field}>
                 <label className={styles.label}>Agent ID</label>
-                <input
-                  className={styles.input}
-                  type="number"
-                  value={agentId}
-                  onChange={e => setAgentId(e.target.value)}
-                  placeholder="Your agent ID"
-                  required
-                />
+                <input className={styles.input} type="number" value={agentId} onChange={e => setAgentId(e.target.value)} placeholder="Your agent ID" required />
               </div>
             )}
 
@@ -182,7 +142,8 @@ export function ConnectForm({ onConnect }: Props) {
 
             {mode === 'register' && (
               <p className={styles.hint}>
-                🔑 Your keypair is generated locally. Private key never leaves your device.
+                <KeyRound size={12} style={{display:'inline',marginRight:4}} />
+                Your keypair is generated locally. Private key never leaves your device.
               </p>
             )}
           </form>

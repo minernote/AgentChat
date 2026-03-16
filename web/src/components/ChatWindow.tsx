@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Lock, ShieldCheck, MoreVertical } from 'lucide-react';
+import { Lock, ShieldCheck, MoreVertical, Clock, Check, CheckCheck, AlertCircle } from 'lucide-react';
 import type { Message, ChatTarget } from '../types';
 import { Identicon } from './Identicon';
 import styles from './ChatWindow.module.css';
@@ -23,12 +23,12 @@ function formatTime(ts: number): string {
 
 function StatusIcon({ status }: { status?: string }) {
   switch (status) {
-    case 'queued':    return <span className={styles.statusQueued}>⏳</span>;
-    case 'sent':      return <span className={styles.statusSent}>✓</span>;
-    case 'delivered': return <span className={styles.statusDelivered}>✓✓</span>;
-    case 'read':      return <span className={styles.statusRead}>✓✓</span>;
-    case 'failed':    return <span className={styles.statusFailed}>⚠️</span>;
-    default:          return <span className={styles.statusSent}>✓</span>;
+    case 'queued':    return <Clock size={11} className={styles.statusQueued} />;
+    case 'sent':      return <Check size={11} className={styles.statusSent} />;
+    case 'delivered': return <CheckCheck size={11} className={styles.statusDelivered} />;
+    case 'read':      return <CheckCheck size={11} className={styles.statusRead} />;
+    case 'failed':    return <AlertCircle size={11} className={styles.statusFailed} />;
+    default:          return <Check size={11} className={styles.statusSent} />;
   }
 }
 
