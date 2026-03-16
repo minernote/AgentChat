@@ -74,6 +74,7 @@ export interface ServerMessage {
   channel?: string;
   text: string;
   reply_to?: number;
+  signed?: boolean;  // true = Double Ratchet signature verified
 }
 
 export interface ServerAgentList {

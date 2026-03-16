@@ -13,6 +13,7 @@ export interface Message {
   timestamp: number;   // ms since epoch
   replyTo?: number;
   status?: DeliveryStatus; // delivery/read status
+  signed?: boolean;    // true = Double Ratchet signature verified, false/undefined = transport-only
 }
 
 export interface Agent {
