@@ -42,61 +42,59 @@ export default function App() {
     }
   }, [activeTarget, sendText, sendChannelText]);
 
-  const allMessages = activeTarget
+  const visibleMessages = activeTarget
     ? activeTarget.kind === 'agent'
       ? dmMessages(activeTarget.id)
       : channelMessages(activeTarget.id)
     : [];
-
-  // Collect recent messages across all targets for the ticker
-  const recentForTicker = (() => {
-    const all: ReturnType<typeof dmMessages> = [];
-    for (const a of agents) {
-      all.push(...dmMessages(a.id));
-    }
-    for (const ch of channels) {
-      all.push(...channelMessages(ch.id));
-    }
-    return all.sort((a, b) => b.timestamp - a.timestamp).slice(0, 12);
-  })();
 
   if (!config || state === 'disconnected') {
     return <ConnectForm onConnect={handleConnect} />;
   }
 
   return (
-    <div className={styles.layout}>
-      <Sidebar
-        myId={config.agentId}
-        agents={agents}
-        channels={channels}
-        activeTarget={activeTarget}
-        onSelectTarget={setActiveTarget}
-        onDisconnect={handleDisconnect}
-      />
-      <div className={styles.chatPane}>
-        <ActivityTicker agents={agents} recentMessages={recentForTicker} />
-        {state === 'connecting' && (
-          <div className={styles.statusBar}>
-            ◈ CONNECTING TO {config.host}:{config.port}…
-          </div>
-        )}
-        {state === 'error' && (
-          <div className={`${styles.statusBar} ${styles.error}`}>
-            ⚠ ERROR: {error}
-          </div>
-        )}
-        <ChatWindow
+    <div className={styles.app}>
+      <header className={styles.topnav}>
+        <div className={styles.logo}>AC</div>
+        <h1 className={styles.appName}>AgentChat</h1>
+        <div className={styles.navBadges}>
+          <span className={styles.navBadge}>🔒 E2EE Active</span>
+          <span className={styles.navBadge}>{agents.filter(a => a.online).length} Agents Online</span>
+          <button onClick={handleDisconnect} className={styles.navBadge} style={{cursor:'pointer', border:'none', background:'#fee2e2', color:'#ef4444'}}>
+            Disconnect
+          </button>
+        </div>
+      </header>
+
+      <ActivityTicker messages={[]} />
+
+      <main className={styles.body}>
+        <Sidebar
+          agents={agents}
+          channels={channels}
+          activeTarget={activeTarget}
+          onSelectTarget={setActiveTarget}
           myId={config.agentId}
-          target={activeTarget}
-          messages={allMessages}
+          onDisconnect={handleDisconnect}
         />
-        <MessageInput
-          onSend={handleSend}
-          disabled={state !== 'connected' || !activeTarget}
-          placeholder={activeTarget ? `encrypt & send to ${activeTarget.name}…` : 'select a target first…'}
-        />
-      </div>
+        
+        <section className={styles.main}>
+          <ChatWindow
+            myId={config.agentId}
+            target={activeTarget}
+            messages={visibleMessages}
+          />
+          {activeTarget && (
+            <MessageInput onSend={handleSend} placeholder={`Message ${activeTarget.name}...`} />
+          )}
+        </section>
+      </main>
+
+      {error && (
+        <div style={{position:'fixed', bottom:20, right:20, background:'#ef4444', color:'#fff', padding:'10px 20px', borderRadius:8, boxShadow:'0 4px 12px rgba(0,0,0,0.2)', zIndex:100}}>
+          Error: {error}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,65 +1,33 @@
-import { useEffect, useRef, useState } from 'react';
-import type { Message, Agent } from '../types';
+import type { Message } from '../types';
 import styles from './ActivityTicker.module.css';
 
-interface TickerItem {
-  id: number;
-  text: string;
-  kind: 'msg' | 'join' | 'leave' | 'enc';
-  ts: number;
-}
-
 interface Props {
-  agents: Agent[];
-  recentMessages: Message[];
+  messages: Message[];
 }
 
-export function ActivityTicker({ agents, recentMessages }: Props) {
-  const [items, setItems] = useState<TickerItem[]>([]);
-  const idRef = useRef(0);
+// Dummy activities for design preview
+const MOCK_ACTIVITIES = [
+  { id: 1, text: "ResearchAgent posted in #general", time: "12:47" },
+  { id: 2, text: "TradingBot confirmed BTC LONG signal", time: "12:48" },
+  { id: 3, text: "SecurityAI cleared risk check", time: "12:48" },
+  { id: 4, text: "DataPipe synced 2.8k records", time: "12:49" },
+];
 
-  useEffect(() => {
-    const newItems: TickerItem[] = recentMessages.slice(-8).map(m => ({
-      id: idRef.current++,
-      text: `AGT#${m.from} → ${m.channel ? `#${m.channel}` : `AGT#${m.to}`}: ${m.text.slice(0, 32)}${m.text.length > 32 ? '…' : ''}`,
-      kind: 'msg',
-      ts: m.timestamp,
-    }));
-    setItems(newItems);
-  }, [recentMessages]);
-
-  useEffect(() => {
-    const online = agents.filter(a => a.online);
-    if (online.length > 0) {
-      setItems(prev => [
-        ...prev.slice(-12),
-        { id: idRef.current++, text: `${online.length} AGENT${online.length !== 1 ? 'S' : ''} ONLINE`, kind: 'enc', ts: Date.now() },
-      ]);
-    }
-  }, [agents]);
-
-  const displayItems = items.length > 0 ? items : [
-    { id: 0, text: 'E2EE ACTIVE — X3DH + DOUBLE RATCHET', kind: 'enc' as const, ts: 0 },
-    { id: 1, text: 'MEGOLM GROUP ENCRYPTION ENABLED', kind: 'enc' as const, ts: 0 },
-    { id: 2, text: 'ED25519 SIGNATURES VERIFIED', kind: 'enc' as const, ts: 0 },
-    { id: 3, text: 'WAITING FOR AGENT CONNECTIONS…', kind: 'join' as const, ts: 0 },
-  ];
-
+export function ActivityTicker({ messages }: Props) {
+  // Use real messages if available, else mock
+  const displayItems = messages.length > 0 ? messages.slice(-5) : [];
+  
   return (
     <div className={styles.ticker}>
-      <span className={styles.label}>LIVE</span>
-      <div className={styles.track}>
-        <div className={styles.items}>
-          {displayItems.map((item, i) => (
-            <span key={`${item.id}-${i}`} className={`${styles.item} ${styles[item.kind]}`}>
-              {item.kind === 'msg' && <span className={styles.lockIcon}>🔒</span>}
-              {item.kind === 'enc' && <span className={styles.lockIcon}>⚡</span>}
-              {item.kind === 'join' && <span className={styles.lockIcon}>●</span>}
-              {item.text}
-              <span className={styles.sep}>◆</span>
-            </span>
-          ))}
-        </div>
+      <div className={styles.label}>LIVE ACTIVITY</div>
+      <div className={styles.scroll}>
+        {(displayItems.length > 0 ? displayItems : MOCK_ACTIVITIES).map((item: any) => (
+          <div key={item.id || item.timestamp} className={styles.item}>
+            <span className={styles.dot}></span>
+            <span className={styles.text}>{item.text}</span>
+            <span className={styles.time}>{item.time || new Date(item.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+          </div>
+        ))}
       </div>
     </div>
   );

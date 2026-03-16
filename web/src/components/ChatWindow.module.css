@@ -1,221 +1,242 @@
 .window {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  overflow: hidden;
-  background: #0a0f1a;
+  height: 100%;
+  background: var(--bg-chat);
 }
 
 .empty {
-  flex: 1;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
-  background: #0a0f1a;
-  color: #1a2e45;
-}
-
-.emptyIcon {
-  font-size: 2rem;
-  opacity: 0.3;
-}
-
-.emptyText {
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #1a2e45;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 14px;
 }
 
 .topbar {
-  padding: 0 1rem;
-  border-bottom: 1px solid rgba(126, 184, 255, 0.06);
-  background: #080d17;
-  height: 44px;
+  padding: 12px 20px;
+  background: var(--bg-sidebar);
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 10px;
+  box-shadow: var(--shadow-sm);
   flex-shrink: 0;
 }
 
-.topbarLeft {
+.topbarAvatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.topbarOnline {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 9px;
+  height: 9px;
+  background: var(--online-green);
+  border-radius: 50%;
+  border: 2px solid var(--bg-sidebar);
 }
 
 .topbarTitle {
-  color: #7eb8ff;
+  font-size: 14px;
   font-weight: 700;
-  font-size: 0.78rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  color: var(--text-primary);
 }
 
 .topbarId {
-  color: #1e3450;
-  font-size: 0.68rem;
+  font-size: 11px;
+  color: var(--text-muted);
   font-weight: 400;
-  letter-spacing: 0.04em;
 }
 
-.topbarBadge {
-  font-size: 0.58rem;
-  padding: 0.1rem 0.4rem;
-  border-radius: 2px;
-  letter-spacing: 0.06em;
-  font-weight: 700;
-  text-transform: uppercase;
+.topbarMeta {
+  font-size: 11px;
+  color: var(--primary);
+  font-weight: 500;
 }
 
-.badgeE2ee {
-  background: rgba(0, 212, 170, 0.1);
-  color: #00d4aa;
-  border: 1px solid rgba(0, 212, 170, 0.2);
+.topbarActions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  color: var(--text-muted);
 }
 
 .messages {
   flex: 1;
+  padding: 16px 20px;
   overflow-y: auto;
-  padding: 0.75rem 1rem 0.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: 4px;
 }
 
-.messages::-webkit-scrollbar { width: 3px; }
-.messages::-webkit-scrollbar-track { background: transparent; }
-.messages::-webkit-scrollbar-thumb { background: #0e1825; border-radius: 4px; }
+.dateDivider {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dateDivider::before,
+.dateDivider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
 
 .noMessages {
   text-align: center;
-  color: #1a2e45;
-  font-size: 0.68rem;
-  margin-top: 2rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 40px 0;
 }
 
 .systemMsg {
   text-align: center;
-  color: #1e3450;
-  font-size: 0.65rem;
-  margin: 0.5rem 0;
-  letter-spacing: 0.06em;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 4px 12px;
+  background: var(--border-light);
+  border-radius: var(--radius-full);
+  margin: 4px auto;
+  max-width: 60%;
 }
 
-.systemMsg::before,
-.systemMsg::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: rgba(126, 184, 255, 0.05);
-}
-
+/* Message rows */
 .msgRow {
   display: flex;
-  align-items: flex-end;
-  gap: 0.5rem;
-  margin-bottom: 0.15rem;
+  gap: 8px;
+  max-width: 75%;
+  margin-bottom: 2px;
 }
 
-.ownRow  { flex-direction: row-reverse; }
-.theirRow { flex-direction: row; }
+.ownRow {
+  margin-left: auto;
+  flex-direction: row-reverse;
+}
 
 .avatar {
-  width: 26px;
-  height: 26px;
-  border-radius: 4px;
-  background: linear-gradient(135deg, #0d1e35, #0a2040);
-  border: 1px solid rgba(126, 184, 255, 0.12);
-  color: #3a6a9a;
-  font-size: 0.6rem;
-  font-weight: 700;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  margin-bottom: 2px;
-  letter-spacing: 0.02em;
+  font-weight: 700;
+  font-size: 11px;
+  align-self: flex-end;
+  overflow: hidden;
 }
 
-.bubble__wrap {
+.bubbleWrap {
   display: flex;
   flex-direction: column;
-  max-width: 62%;
+  gap: 2px;
 }
 
 .senderLabel {
-  font-size: 0.6rem;
-  color: #2a4a6a;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary);
+  padding-left: 4px;
   margin-bottom: 2px;
-  padding-left: 2px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 
 .bubble {
-  padding: 0.45rem 0.7rem;
-  border-radius: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  line-height: 1.45;
-  word-break: break-word;
+  padding: 8px 12px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   position: relative;
-}
-
-.ownBubble {
-  background: rgba(126, 184, 255, 0.08);
-  border: 1px solid rgba(126, 184, 255, 0.12);
-  border-bottom-right-radius: 2px;
-  color: #a8d0ff;
+  word-break: break-word;
 }
 
 .theirBubble {
-  background: rgba(0, 212, 170, 0.05);
-  border: 1px solid rgba(0, 212, 170, 0.08);
-  border-bottom-left-radius: 2px;
-  color: #c0e8e0;
+  background: var(--bg-bubble-them);
+  border-bottom-left-radius: 4px;
+  color: var(--text-primary);
+}
+
+.ownBubble {
+  background: var(--bg-bubble-me);
+  border-bottom-right-radius: 4px;
+  color: #ffffff;
 }
 
 .msgText {
-  font-size: 0.82rem;
+  font-size: 13px;
   line-height: 1.5;
 }
 
 .msgMeta {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 4px;
+  margin-top: 4px;
   justify-content: flex-end;
 }
 
-.encBadge {
-  font-size: 0.58rem;
-  color: rgba(255, 200, 0, 0.7);  /* yellow = transport-only */
-  letter-spacing: 0.03em;
-}
-
-.encBadgeVerified {
-  color: rgba(0, 212, 170, 0.9);  /* green = verified signature */
-}
-
 .timestamp {
-  font-size: 0.6rem;
-  color: #1e3450;
-  white-space: nowrap;
-  flex-shrink: 0;
-  letter-spacing: 0.03em;
+  font-size: 10px;
+  color: rgba(255,255,255,0.6);
 }
 
-.statusQueued   { font-size: 0.65rem; color: #1e3450; }
-.statusSent     { font-size: 0.65rem; color: #1e3450; }
-.statusDelivered{ font-size: 0.65rem; color: #2a4a6a; }
-.statusRead     { font-size: 0.65rem; color: #00d4aa; }
-.statusFailed   { font-size: 0.65rem; color: #e05c5c; cursor: pointer; }
+.theirBubble .timestamp {
+  color: var(--text-muted);
+}
+
+.statusQueued   { font-size: 11px; color: rgba(255,255,255,0.5); }
+.statusSent     { font-size: 11px; color: rgba(255,255,255,0.6); }
+.statusDelivered{ font-size: 11px; color: rgba(255,255,255,0.7); }
+.statusRead     { font-size: 11px; color: #a5f3fc; }
+.statusFailed   { font-size: 11px; color: #fca5a5; cursor: pointer; }
+
+/* E2EE badge */
+.encryptBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9px;
+  font-weight: 600;
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+.encryptVerified {
+  background: rgba(16,185,129,0.15);
+  color: #10b981;
+}
+
+.ownBubble .encryptVerified {
+  background: rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.85);
+}
+
+.encryptTransport {
+  background: rgba(245,158,11,0.15);
+  color: #f59e0b;
+}
+
+.ownBubble .encryptTransport {
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.7);
+}
