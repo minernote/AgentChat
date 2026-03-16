@@ -198,8 +198,12 @@
 
 .encBadge {
   font-size: 0.58rem;
-  color: rgba(0, 212, 170, 0.5);
+  color: rgba(255, 200, 0, 0.7);  /* yellow = transport-only */
   letter-spacing: 0.03em;
+}
+
+.encBadgeVerified {
+  color: rgba(0, 212, 170, 0.9);  /* green = verified signature */
 }
 
 .timestamp {
