@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Settings, LogOut, Hash, Lock, Search, Circle } from 'lucide-react';
 import type { Agent, Channel, ChatTarget } from '../types';
 import { Identicon } from './Identicon';
 import styles from './Sidebar.module.css';
@@ -14,6 +15,7 @@ interface Props {
 
 export function Sidebar({ myId, agents, channels, activeTarget, onSelectTarget, onDisconnect }: Props) {
   const [showSettings, setShowSettings] = useState(false);
+  const [search, setSearch] = useState('');
   const peers = agents.filter(a => a.id !== myId);
   const onlineCount = peers.filter(a => a.online).length;
 
@@ -25,9 +27,15 @@ export function Sidebar({ myId, agents, channels, activeTarget, onSelectTarget, 
     return false;
   }
 
+  const filteredPeers = peers.filter(a =>
+    !search || a.name.toLowerCase().includes(search.toLowerCase())
+  );
+  const filteredChannels = channels.filter(ch =>
+    !search || ch.name.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <aside className={styles.sidebar}>
-      {/* Header — like Telegram's profile area */}
       <div className={styles.header}>
         <div className={styles.myProfile}>
           <div className={styles.myAvatar}>
@@ -35,7 +43,7 @@ export function Sidebar({ myId, agents, channels, activeTarget, onSelectTarget, 
           </div>
           <div className={styles.myInfo}>
             <span className={styles.myName}>My Agent</span>
-            <span className={styles.myId}>#{myId} · <span className={styles.onlineDot}>●</span> Online</span>
+            <span className={styles.myId}>#{myId}</span>
           </div>
         </div>
         <button
@@ -43,77 +51,87 @@ export function Sidebar({ myId, agents, channels, activeTarget, onSelectTarget, 
           onClick={() => setShowSettings(!showSettings)}
           title="Settings"
         >
-          ⚙️
+          <Settings size={18} strokeWidth={1.8} />
         </button>
       </div>
 
-      {/* Settings dropdown */}
       {showSettings && (
         <div className={styles.settingsMenu}>
           <div className={styles.settingsItem}>
-            <span>🔒 E2EE Active</span>
+            <Lock size={14} />
+            <span>E2EE Active</span>
           </div>
           <div className={styles.settingsItem}>
-            <span>🤖 Agent #{myId}</span>
+            <Circle size={14} />
+            <span>Agent #{myId}</span>
           </div>
           <div className={styles.settingsDivider} />
           <button className={styles.logoutBtn} onClick={onDisconnect}>
-            🚪 Sign out
+            <LogOut size={14} />
+            <span>Sign out</span>
           </button>
         </div>
       )}
 
-      {/* Search — like Telegram */}
       <div className={styles.search}>
-        <input className={styles.searchInput} placeholder="🔍  Search agents or channels..." />
+        <Search size={14} className={styles.searchIcon} />
+        <input
+          className={styles.searchInput}
+          placeholder="Search..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
       </div>
 
-      {/* Channels */}
-      {channels.length > 0 && (
-        <>
-          <div className={styles.sectionTitle}>Channels</div>
-          {channels.map(ch => (
-            <button
-              key={ch.id}
-              className={`${styles.chatItem} ${isActive({ kind: 'channel', id: ch.id, name: ch.name }) ? styles.active : ''}`}
-              onClick={() => onSelectTarget({ kind: 'channel', id: ch.id, name: ch.name })}
-            >
-              <div className={styles.channelIcon}>#</div>
-              <div className={styles.chatInfo}>
-                <div className={styles.chatName}>{ch.name} <span className={styles.lockIcon}>🔒</span></div>
-                <div className={styles.chatPreview}>Encrypted channel</div>
-              </div>
-            </button>
-          ))}
-        </>
-      )}
+      <div className={styles.scrollArea}>
+        {filteredChannels.length > 0 && (
+          <>
+            <div className={styles.sectionTitle}>Channels</div>
+            {filteredChannels.map(ch => (
+              <button
+                key={ch.id}
+                className={`${styles.chatItem} ${isActive({ kind: 'channel', id: ch.id, name: ch.name }) ? styles.active : ''}`}
+                onClick={() => onSelectTarget({ kind: 'channel', id: ch.id, name: ch.name })}
+              >
+                <div className={styles.channelIcon}>
+                  <Hash size={15} strokeWidth={2} />
+                </div>
+                <div className={styles.chatInfo}>
+                  <div className={styles.chatName}>
+                    {ch.name}
+                    <Lock size={10} className={styles.lockIcon} />
+                  </div>
+                  <div className={styles.chatPreview}>Encrypted channel</div>
+                </div>
+              </button>
+            ))}
+          </>
+        )}
 
-      {/* Direct Messages */}
-      <div className={styles.sectionTitle}>
-        Direct Messages
-        {onlineCount > 0 && <span className={styles.onlineBadge}>{onlineCount} online</span>}
-      </div>
-      {peers.length === 0 && (
-        <div className={styles.emptyState}>
-          No agents connected yet
+        <div className={styles.sectionTitle}>
+          Direct Messages
+          {onlineCount > 0 && <span className={styles.onlineBadge}>{onlineCount}</span>}
         </div>
-      )}
-      {peers.map(agent => (
-        <button
-          key={agent.id}
-          className={`${styles.chatItem} ${isActive({ kind: 'agent', id: agent.id, name: agent.name }) ? styles.active : ''}`}
-          onClick={() => onSelectTarget({ kind: 'agent', id: agent.id, name: agent.name })}
-        >
-          <div className={styles.avatar}>
-            <Identicon agentId={agent.id} size={38} />
-            <div className={agent.online ? styles.onlineDotBadge : styles.offlineDotBadge} />
-          </div>
-          <div className={styles.chatInfo}>
-            <div className={styles.chatName}>{agent.name}</div>
-            <div className={styles.chatPreview}>#{agent.id} · {agent.online ? 'Online' : 'Offline'}</div>
-          </div>
-        </button>
-      ))}
+        {filteredPeers.length === 0 && (
+          <div className={styles.emptyState}>No agents connected</div>
+        )}
+        {filteredPeers.map(agent => (
+          <button
+            key={agent.id}
+            className={`${styles.chatItem} ${isActive({ kind: 'agent', id: agent.id, name: agent.name }) ? styles.active : ''}`}
+            onClick={() => onSelectTarget({ kind: 'agent', id: agent.id, name: agent.name })}
+          >
+            <div className={styles.avatar}>
+              <Identicon agentId={agent.id} size={38} />
+              <div className={agent.online ? styles.onlineDotBadge : styles.offlineDotBadge} />
+            </div>
+            <div className={styles.chatInfo}>
+              <div className={styles.chatName}>{agent.name}</div>
+              <div className={styles.chatPreview}>#{agent.id} · {agent.online ? 'Online' : 'Offline'}</div>
+            </div>
+          </button>
+        ))}
+      </div>
     </aside>
   );
 }

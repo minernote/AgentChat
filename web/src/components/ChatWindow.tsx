@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
+import { Lock, ShieldCheck, MoreVertical } from 'lucide-react';
 import type { Message, ChatTarget } from '../types';
-import styles from './ChatWindow.module.css';
 import { Identicon } from './Identicon';
+import styles from './ChatWindow.module.css';
 
 interface Props {
   myId: number;
@@ -14,20 +15,20 @@ function formatTime(ts: number): string {
   const now = new Date();
   const isToday = d.toDateString() === now.toDateString();
   const isYesterday = new Date(now.getTime() - 86400000).toDateString() === d.toDateString();
-  const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+  const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   if (isToday) return time;
-  if (isYesterday) return `YESTERDAY ${time}`;
+  if (isYesterday) return `Yesterday ${time}`;
   return `${d.toLocaleDateString([], { month: 'short', day: 'numeric' })} ${time}`;
 }
 
 function StatusIcon({ status }: { status?: string }) {
   switch (status) {
-    case 'queued':    return <span className={styles.statusQueued}    title="Queued">○</span>;
-    case 'sent':      return <span className={styles.statusSent}      title="Sent">◉</span>;
-    case 'delivered': return <span className={styles.statusDelivered} title="Delivered">◉◉</span>;
-    case 'read':      return <span className={styles.statusRead}      title="Read">◉◉</span>;
-    case 'failed':    return <span className={styles.statusFailed}    title="Failed">⚠</span>;
-    default:          return <span className={styles.statusSent}      title="Sent">◉</span>;
+    case 'queued':    return <span className={styles.statusQueued}>⏳</span>;
+    case 'sent':      return <span className={styles.statusSent}>✓</span>;
+    case 'delivered': return <span className={styles.statusDelivered}>✓✓</span>;
+    case 'read':      return <span className={styles.statusRead}>✓✓</span>;
+    case 'failed':    return <span className={styles.statusFailed}>⚠️</span>;
+    default:          return <span className={styles.statusSent}>✓</span>;
   }
 }
 
@@ -41,8 +42,7 @@ export function ChatWindow({ myId, target, messages }: Props) {
   if (!target) {
     return (
       <div className={styles.empty}>
-        <span className={styles.emptyIcon}>⬡</span>
-        <span className={styles.emptyText}>select agent or channel</span>
+        <span>Select an agent or channel to start chatting</span>
       </div>
     );
   }
@@ -50,22 +50,24 @@ export function ChatWindow({ myId, target, messages }: Props) {
   return (
     <div className={styles.window}>
       <div className={styles.topbar}>
-        <div className={styles.topbarLeft}>
-          {target.kind === 'channel' ? (
-            <span className={styles.topbarTitle}># {target.name}</span>
-          ) : (
-            <span className={styles.topbarTitle}>
-              {target.name}{' '}
-              <span className={styles.topbarId}>#{target.id}</span>
-            </span>
-          )}
-          <span className={`${styles.topbarBadge} ${styles.badgeE2ee}`}>🔒 E2EE</span>
+        <div className={styles.topbarAvatar}>
+          {target.kind === 'channel' ? '#' : <Identicon agentId={target.id} size={34} />}
+        </div>
+        <div className={styles.headerInfo}>
+          <h3 className={styles.topbarTitle}>{target.name}</h3>
+          <div className={styles.topbarMeta}>
+            <Lock size={10} /> 
+            <span>End-to-end encrypted</span>
+          </div>
+        </div>
+        <div className={styles.topbarActions}>
+          <MoreVertical size={18} />
         </div>
       </div>
 
       <div className={styles.messages}>
         {messages.length === 0 && (
-          <div className={styles.noMessages}>— NO MESSAGES YET —</div>
+          <div className={styles.noMessages}>No messages yet</div>
         )}
         {messages.map((msg, i) => {
           const isOwn = msg.from === myId;
@@ -85,22 +87,23 @@ export function ChatWindow({ myId, target, messages }: Props) {
               className={`${styles.msgRow} ${isOwn ? styles.ownRow : styles.theirRow}`}
             >
               {!isOwn && (
-                <Identicon agentId={msg.from} size={32} />
+                <div className={styles.avatar}>
+                  <Identicon agentId={msg.from} size={30} />
+                </div>
               )}
-              <div className={styles.bubble__wrap}>
+              <div className={styles.bubbleWrap}>
                 {!isOwn && (
-                  <div className={styles.senderLabel}>AGT#{msg.from}</div>
+                  <div className={styles.senderLabel}>Agent #{msg.from}</div>
                 )}
                 <div className={`${styles.bubble} ${isOwn ? styles.ownBubble : styles.theirBubble}`}>
                   <span className={styles.msgText}>{msg.text}</span>
-                  <span className={styles.msgMeta}>
-                    <span
-                      className={`${styles.encryptBadge} ${msg.signed ? styles.encryptVerified : styles.encryptTransport}`}
-                      title={msg.signed ? 'E2EE verified (Double Ratchet signature)' : 'Transport encrypted only'}
-                    >🔒</span>
-                    <span className={styles.timestamp}>{formatTime(msg.timestamp)}</span>
+                  <div className={styles.msgMeta}>
+                    <div className={styles.encryptBadge}>
+                      <ShieldCheck size={10} className={styles.encryptVerified} />
+                      <span className={styles.timestamp}>{formatTime(msg.timestamp)}</span>
+                    </div>
                     {isOwn && <StatusIcon status={msg.status} />}
-                  </span>
+                  </div>
                 </div>
               </div>
             </div>
