@@ -99,7 +99,9 @@ export function ChatWindow({ myId, target, messages }: Props) {
                   <span className={styles.msgText}>{msg.text}</span>
                   <div className={styles.msgMeta}>
                     <div className={styles.encryptBadge}>
-                      <ShieldCheck size={10} className={styles.encryptVerified} />
+                      {msg.signed
+                        ? <ShieldCheck size={10} className={styles.encryptVerified} />
+                        : <Lock size={10} className={styles.encryptTransport} />}
                       <span className={styles.timestamp}>{formatTime(msg.timestamp)}</span>
                     </div>
                     {isOwn && <StatusIcon status={msg.status} />}
