@@ -9,6 +9,7 @@ import {
   parseFrame,
   type ServerMessage,
   type ServerAgentList,
+  type ServerAgentStatus,
   type ServerChannelEvent,
 } from '../utils/protocol';
 import { useMessages } from './useMessages';
@@ -95,6 +96,22 @@ export function useAgentChat(
             type: 'text',
             timestamp: Date.now(),
             replyTo: f.reply_to,
+          });
+          break;
+        }
+        case 'agent_status': {
+          const f = frame as ServerAgentStatus;
+          setAgents(prev => {
+            const existing = prev.find(a => a.id === f.agent_id);
+            if (existing) {
+              return prev.map(a =>
+                a.id === f.agent_id ? { ...a, online: f.online, name: f.name || a.name } : a,
+              );
+            }
+            if (f.online) {
+              return [...prev, { id: f.agent_id, name: f.name || `agent-${f.agent_id}`, online: true }];
+            }
+            return prev;
           });
           break;
         }

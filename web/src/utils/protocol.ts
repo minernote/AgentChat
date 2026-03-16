@@ -98,10 +98,18 @@ export interface ServerPong {
   type: 'pong';
 }
 
+export interface ServerAgentStatus {
+  type: 'agent_status';
+  agent_id: number;
+  online: boolean;
+  name?: string;
+}
+
 export type ServerFrame =
   | ServerAck
   | ServerMessage
   | ServerAgentList
+  | ServerAgentStatus
   | ServerChannelEvent
   | ServerError
   | ServerPong

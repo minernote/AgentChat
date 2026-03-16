@@ -415,7 +415,16 @@ static bool handle_auth_response(ClientConn& c, const std::vector<uint8_t>& payl
 
     std::cout << "[server] Agent " << assigned
               << " authenticated from " << c.peer_addr << "\n";
-    // Notify WS clients of new agent
+
+    // Broadcast agent online status to WS clients
+    std::ostringstream status_ev;
+    status_ev << "{\"type\":\"agent_status\""
+              << ",\"agent_id\":" << assigned
+              << ",\"online\":true"
+              << ",\"name\":\"\"}"; // name will be sent in REGISTER_AGENT
+    ws_broadcast(status_ev.str());
+
+    // Notify WS clients of new agent list (legacy)
     ws_push_agent_list();
     return true;
 }
@@ -1293,7 +1302,17 @@ int main(int argc, char* argv[]) {
             if (it == clients.end()) continue;
             ClientConn& conn = *it->second;
             if (conn.agent_id) {
+                // Broadcast agent offline status to WS clients
+                std::ostringstream status_ev;
+                status_ev << "{\"type\":\"agent_status\""
+                          << ",\"agent_id\":" << conn.agent_id
+                          << ",\"online\":false"
+                          << ",\"name\":" << (conn.name.empty() ? "\"\"" : '"' + conn.name + '"')
+                          << "}";
+                ws_broadcast(status_ev.str());
                 g_agents.erase(conn.agent_id);
+                g_agent_trust.erase(conn.agent_id);
+                g_agent_capabilities.erase(conn.agent_id);
                 std::cout << "[server] Agent " << conn.agent_id
                           << " disconnected (" << conn.peer_addr << ")\n";
             } else {
