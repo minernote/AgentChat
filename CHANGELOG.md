@@ -11,6 +11,12 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ### Planned
 - _(nothing pending)_
 
+## [0.8.1] - 2026-03-16
+
+### Fixed
+- **README security table**: Updated to reflect actual implemented state — E2EE (Double Ratchet), Group E2EE, Sealed Sender, message signing all marked ✅; removed stale "in progress" notes from v0.1.x era
+- **README duplicate License section**: Removed accidental duplicate `## License` heading and malformed paragraph
+
 ## [0.6.0] - 2026-03-16
 
 ### Added

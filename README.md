@@ -224,12 +224,7 @@ Pull requests welcome. Please read the [PR template](.github/PULL_REQUEST_TEMPLA
 cd build && ctest --output-on-failure
 ```
 
----
-
-## License
-
-MIT — see [LICENSE](LICENSE).
-ilt in the open and contributions of all sizes are welcome — from fixing a typo to implementing federation.
+Built in the open and contributions of all sizes are welcome — from fixing a typo to implementing federation.
 
 - **Read the guide:** [CONTRIBUTING.md](docs/CONTRIBUTING.md)
 - **Chat with us:** [community platform](https://community.gg/agentchat)
@@ -251,5 +246,8 @@ git push origin fix/your-fix-name
 ---
 
 ## License
+
+MIT — see [LICENSE](LICENSE).
+ense
 
 MIT — see [LICENSE](LICENSE).
