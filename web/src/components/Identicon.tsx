@@ -1,54 +1,77 @@
 /**
- * Identicon — deterministic SVG avatar generated from an agent_id.
- * 5×5 symmetric grid (mirrored left/right) with hashed hsl color.
- * No external dependencies.
+ * Identicon — deterministic geometric avatar from agent_id.
+ * Uses a simple hash to pick colors + a 5×5 symmetric grid pattern.
  */
 
-function hash(n: number): number {
-  let h = (n ^ 0xdeadbeef) >>> 0;
-  h = (Math.imul(h ^ (h >>> 16), 0x45d9f3b)) >>> 0;
-  h = (Math.imul(h ^ (h >>> 16), 0x45d9f3b)) >>> 0;
-  return (h ^ (h >>> 16)) >>> 0;
-}
-
-function identiconData(agentId: number): { cells: boolean[][]; color: string } {
-  const h0 = hash(agentId);
-  const h1 = hash(agentId + 1000);
-  const h2 = hash(agentId + 2000);
-  const hue = h0 % 360;
-  const sat = 45 + (h1 % 30);
-  const lit = 50 + (h2 % 15);
-  const color = `hsl(${hue},${sat}%,${lit}%)`;
-
-  const ROWS = 5;
-  const HALF = 3;
-  const bits = hash(agentId + 3000);
-  const cells: boolean[][] = [];
-  for (let r = 0; r < ROWS; r++) {
-    const row: boolean[] = [];
-    for (let c = 0; c < HALF; c++) {
-      const idx = r * HALF + c;
-      const filled = idx < 32 ? ((bits >>> idx) & 1) === 1 : hash(agentId + idx) % 2 === 1;
-      row.push(filled);
-    }
-    row.push(row[1]); // mirror: col 3 = col 1
-    row.push(row[0]); // mirror: col 4 = col 0
-    cells.push(row);
-  }
-  return { cells, color };
-}
-
-interface Props {
+interface IdenticonProps {
   agentId: number;
   size?: number;
   className?: string;
 }
 
-export function Identicon({ agentId, size = 32, className }: Props) {
-  const { cells, color } = identiconData(agentId);
-  const COLS = 5;
-  const pad = Math.round(size * 0.1);
-  const cellSize = (size - pad * 2) / COLS;
+/** Fast integer hash (32-bit FNV-1a variant over the decimal string) */
+function hash32(n: number): number {
+  let h = 0x811c9dc5;
+  const s = String(n);
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h >>> 0; // unsigned 32-bit
+}
+
+function hslToHex(h: number, s: number, l: number): string {
+  s /= 100;
+  l /= 100;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) => {
+    const k = (n + h / 30) % 12;
+    const c = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    return Math.round(255 * c)
+      .toString(16)
+      .padStart(2, '0');
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+
+export function Identicon({ agentId, size = 36, className }: IdenticonProps) {
+  const h0 = hash32(agentId);
+  const h1 = hash32(agentId ^ 0xdeadbeef);
+
+  // Foreground colour: vibrant HSL
+  const hue = h0 % 360;
+  const fg = hslToHex(hue, 65, 50);
+  const bg = hslToHex(hue, 20, 92);
+
+  // 5×5 grid, left half random, mirrored to right (symmetric)
+  const cells: boolean[] = [];
+  for (let row = 0; row < 5; row++) {
+    for (let col = 0; col < 3; col++) {
+      const bit = (h1 >> (row * 3 + col)) & 1;
+      cells.push(bit === 1);
+    }
+  }
+
+  const cellSize = size / 5;
+  const rects: JSX.Element[] = [];
+
+  for (let row = 0; row < 5; row++) {
+    for (let col = 0; col < 5; col++) {
+      // Mirror: col 0-2 from cells, col 3 mirrors col 1, col 4 mirrors col 0
+      const srcCol = col < 3 ? col : 4 - col;
+      if (!cells[row * 3 + srcCol]) continue;
+      rects.push(
+        <rect
+          key={`${row}-${col}`}
+          x={col * cellSize}
+          y={row * cellSize}
+          width={cellSize}
+          height={cellSize}
+          fill={fg}
+        />,
+      );
+    }
+  }
 
   return (
     <svg
@@ -56,24 +79,11 @@ export function Identicon({ agentId, size = 32, className }: Props) {
       height={size}
       viewBox={`0 0 ${size} ${size}`}
       className={className}
-      style={{ borderRadius: '50%', background: '#21262d', flexShrink: 0, marginTop: 2 }}
+      style={{ borderRadius: '6px', flexShrink: 0, display: 'block' }}
       aria-label={`Agent ${agentId} avatar`}
     >
-      {cells.map((row, r) =>
-        row.map((filled, c) =>
-          filled ? (
-            <rect
-              key={`${r}-${c}`}
-              x={pad + c * cellSize}
-              y={pad + r * cellSize}
-              width={cellSize - 1}
-              height={cellSize - 1}
-              rx={1}
-              fill={color}
-            />
-          ) : null,
-        ),
-      )}
+      <rect width={size} height={size} fill={bg} />
+      {rects}
     </svg>
   );
 }
