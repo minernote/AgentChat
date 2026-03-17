@@ -6,6 +6,7 @@ import {
   mkChannelMessage,
   mkListAgents,
   mkPing,
+  mkTyping,
   mkSealedSend,
   parseFrame,
   type ServerMessage,
@@ -13,6 +14,7 @@ import {
   type ServerAgentStatus,
   type ServerChannelEvent,
   type ServerSealedSend,
+  type ServerTyping,
 } from '../utils/protocol';
 import { useMessages } from './useMessages';
 
@@ -276,6 +278,14 @@ export function useAgentChat(
     [],
   );
 
+  const sendTyping = useCallback(
+    (to: number) => {
+      if (wsRef.current?.readyState !== WebSocket.OPEN) return;
+      wsRef.current.send(mkTyping(to));
+    },
+    [],
+  );
+
   const deleteMessage = useCallback(
     (msgId: number, to?: number, channel?: string) => {
       if (wsRef.current?.readyState !== WebSocket.OPEN) return;
@@ -292,6 +302,29 @@ export function useAgentChat(
 
   const kickSession = useCallback((fd: number) => {
     if (wsRef.current?.readyState !== WebSocket.OPEN) return;
+    wsRef.current.send(mkKickSession(fd));
+    setSessions(prev => prev.filter(s => s.fd !== fd));
+  }, []);
+
+  return {
+    state,
+    error,
+    agents,
+    channels,
+    messages,
+    sessions,
+    sendText,
+    sendChannelText,
+    sendSealedMessage,
+    deleteMessage,
+    listSessions,
+    kickSession,
+    disconnect,
+    dmMessages,
+    channelMessages,
+  };
+}
+turn;
     wsRef.current.send(mkKickSession(fd));
     setSessions(prev => prev.filter(s => s.fd !== fd));
   }, []);

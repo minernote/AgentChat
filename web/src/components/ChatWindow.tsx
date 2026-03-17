@@ -33,7 +33,7 @@ function StatusIcon({ status }: { status?: string }) {
   }
 }
 
-export function ChatWindow({ myId, target, messages, onDeleteMessage }: Props) {
+export function ChatWindow({ myId, target, messages, onDeleteMessage, typingPeers = [] }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number, msgId: number } | null>(null);
 
@@ -132,6 +132,22 @@ export function ChatWindow({ myId, target, messages, onDeleteMessage }: Props) {
         <div 
           className={styles.menuOverlay}
           style={{ position: 'fixed', top: contextMenu.y, left: contextMenu.x, zIndex: 1000 }}
+        >
+          <button 
+            className={styles.menuItem} 
+            onClick={() => onDeleteMessage(contextMenu.msgId)}
+          >
+            <Trash2 size={14} /> Delete for everyone
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+  );
+}
+contextMenu.y, left: contextMenu.x, zIndex: 1000 }}
         >
           <button 
             className={styles.menuItem} 

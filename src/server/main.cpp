@@ -349,6 +349,18 @@ static void handle_ws_message(WsConn& wc, const std::string& json) {
         return;
     }
 
+    if (*type == "typing") {
+        uint64_t to = ws_json::get_u64(json, "to");
+        if (to == 0 || !wc.registered) return;
+        std::ostringstream ev;
+        ev << "{\"type\":\"typing\",\"from\":" << wc.agent_id << ",\"to\":" << to << "}";
+        std::string ev_str = ev.str();
+        for (auto& [fd2, wc2] : g_ws_clients)
+            if (wc2->is_open() && wc2->registered && wc2->agent_id == to)
+                wc2->queue_text(ev_str);
+        return;
+    }
+
 }
 
 // ── Binary protocol helpers ───────────────────────────────────────────────────

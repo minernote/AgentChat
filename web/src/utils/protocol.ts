@@ -60,6 +60,10 @@ export function mkPing(): string {
   return JSON.stringify({ type: 'ping' });
 }
 
+export function mkTyping(to: number): string {
+  return JSON.stringify({ type: 'typing', to });
+}
+
 /**
  * SEALED_SEND (0x13) — sender identity hidden from server.
  * Caller must E2EE-encrypt `ciphertext` before passing it here.
