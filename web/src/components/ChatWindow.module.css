@@ -273,3 +273,22 @@
 .menuItem:hover {
   background: rgba(248,113,113,0.1);
 }
+
+/* Auto-delete countdown */
+.ttlCount {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 9px;
+  color: rgba(255,255,255,0.5);
+  margin-left: 4px;
+}
+
+.ttlCountOwn {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 9px;
+  color: rgba(255,255,255,0.55);
+  margin-left: 4px;
+}

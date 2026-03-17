@@ -45,12 +45,12 @@ export default function App() {
     setActiveTarget(null);
   }, [disconnect]);
 
-  const handleSend = useCallback((text: string) => {
+  const handleSend = useCallback((text: string, ttl?: number) => {
     if (!activeTarget) return;
     if (activeTarget.kind === 'agent') {
-      sendText(text, activeTarget.id);
+      sendText(text, activeTarget.id, ttl);
     } else {
-      sendChannelText(text, activeTarget.id);
+      sendChannelText(text, activeTarget.id, ttl);
     }
   }, [activeTarget, sendText, sendChannelText]);
 

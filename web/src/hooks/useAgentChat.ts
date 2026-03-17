@@ -26,8 +26,8 @@ export interface UseAgentChatReturn {
   channels: Channel[];
   messages: Message[];
   sessions: SessionInfo[];
-  sendText: (text: string, to: number) => void;
-  sendChannelText: (text: string, channel: string) => void;
+  sendText: (text: string, to: number, ttl?: number) => void;
+  sendChannelText: (text: string, channel: string, ttl?: number) => void;
   sendSealedMessage: (to: number, ciphertext: string) => void;
   deleteMessage: (msgId: number, to?: number, channel?: string) => void;
   listSessions: () => void;
@@ -241,24 +241,26 @@ export function useAgentChat(
   }, [enabled, serverHost, port, agentId, agentName]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const sendText = useCallback(
-    (text: string, to: number) => {
+    (text: string, to: number, ttl?: number) => {
       if (wsRef.current?.readyState !== WebSocket.OPEN) return;
-      wsRef.current.send(mkMessage(to, text));
+      wsRef.current.send(mkMessage(to, text, undefined, ttl));
       addMessage({
         from: agentId,
         to,
         text,
         type: 'text',
         timestamp: Date.now(),
+        ttl,
+        expiresAt: ttl && ttl > 0 ? Date.now() + ttl * 1000 : undefined,
       });
     },
     [agentId, addMessage],
   );
 
   const sendChannelText = useCallback(
-    (text: string, channel: string) => {
+    (text: string, channel: string, ttl?: number) => {
       if (wsRef.current?.readyState !== WebSocket.OPEN) return;
-      wsRef.current.send(mkChannelMessage(channel, text));
+      wsRef.current.send(mkChannelMessage(channel, text, ttl));
       addMessage({
         from: agentId,
         channel,
@@ -266,6 +268,8 @@ export function useAgentChat(
         type: 'text',
         timestamp: Date.now(),
         signed: false,
+        ttl,
+        expiresAt: ttl && ttl > 0 ? Date.now() + ttl * 1000 : undefined,
       });
     },
     [agentId, addMessage],
