@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import { Lock, ShieldCheck, MoreVertical, Clock, Check, CheckCheck, AlertCircle } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Lock, ShieldCheck, MoreVertical, Clock, Check, CheckCheck, AlertCircle, Trash2 } from 'lucide-react';
 import type { Message, ChatTarget } from '../types';
 import { Identicon } from './Identicon';
 import styles from './ChatWindow.module.css';
@@ -8,6 +8,7 @@ interface Props {
   myId: number;
   target: ChatTarget | null;
   messages: Message[];
+  onDeleteMessage: (id: number) => void;
 }
 
 function formatTime(ts: number): string {
@@ -32,12 +33,19 @@ function StatusIcon({ status }: { status?: string }) {
   }
 }
 
-export function ChatWindow({ myId, target, messages }: Props) {
+export function ChatWindow({ myId, target, messages, onDeleteMessage }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number, y: number, msgId: number } | null>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    const handleGlobalClick = () => setContextMenu(null);
+    window.addEventListener('click', handleGlobalClick);
+    return () => window.removeEventListener('click', handleGlobalClick);
+  }, []);
 
   if (!target) {
     return (
@@ -46,6 +54,11 @@ export function ChatWindow({ myId, target, messages }: Props) {
       </div>
     );
   }
+
+  const handleContextMenu = (e: React.MouseEvent, msgId: number) => {
+    e.preventDefault();
+    setContextMenu({ x: e.clientX, y: e.clientY, msgId });
+  };
 
   return (
     <div className={styles.window}>
@@ -61,7 +74,7 @@ export function ChatWindow({ myId, target, messages }: Props) {
           </div>
         </div>
         <div className={styles.topbarActions}>
-          <MoreVertical size={18} />
+          <button title="More"><MoreVertical size={18} /></button>
         </div>
       </div>
 
@@ -74,17 +87,18 @@ export function ChatWindow({ myId, target, messages }: Props) {
           const isSystem = msg.type === 'system' || msg.from === 0;
 
           if (isSystem) {
-            return (
-              <div key={`${msg.id}-${i}`} className={styles.systemMsg}>
-                {msg.text}
-              </div>
-            );
+            return <div key={`${msg.id}-${i}`} className={styles.systemMsg}>{msg.text}</div>;
+          }
+
+          if (msg.deleted) {
+            return <div key={`${msg.id}-${i}`} className={styles.systemMsg}>Message deleted</div>;
           }
 
           return (
             <div
               key={`${msg.id}-${i}`}
               className={`${styles.msgRow} ${isOwn ? styles.ownRow : styles.theirRow}`}
+              onContextMenu={(e) => isOwn && handleContextMenu(e, msg.id)}
             >
               {!isOwn && (
                 <div className={styles.avatar}>
@@ -113,6 +127,20 @@ export function ChatWindow({ myId, target, messages }: Props) {
         })}
         <div ref={bottomRef} />
       </div>
+
+      {contextMenu && (
+        <div 
+          className={styles.menuOverlay}
+          style={{ position: 'fixed', top: contextMenu.y, left: contextMenu.x, zIndex: 1000 }}
+        >
+          <button 
+            className={styles.menuItem} 
+            onClick={() => onDeleteMessage(contextMenu.msgId)}
+          >
+            <Trash2 size={14} /> Delete for everyone
+          </button>
+        </div>
+      )}
     </div>
   );
 }

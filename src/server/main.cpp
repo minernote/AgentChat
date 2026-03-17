@@ -282,6 +282,73 @@ static void handle_ws_message(WsConn& wc, const std::string& json) {
                 wc2->queue_text(frame_str);
         return;
     }
+
+    if (*type == "delete_message") {
+        uint64_t msg_id = ws_json::get_u64(json, "message_id");
+        uint64_t to     = ws_json::get_u64(json, "to");
+        auto     ch     = ws_json::get(json, "channel").value_or("");
+        if (msg_id == 0) return;
+        std::ostringstream ev;
+        ev << "{\"type\":\"message_deleted\",\"message_id\":" << msg_id
+           << ",\"by\":" << wc.agent_id << "}";
+        std::string ev_str = ev.str();
+        if (!ch.empty()) {
+            for (auto& [fd2, wc2] : g_ws_clients)
+                if (wc2->is_open() &&
+                    std::find(wc2->channels.begin(), wc2->channels.end(), ch) != wc2->channels.end())
+                    wc2->queue_text(ev_str);
+        } else {
+            for (auto& [fd2, wc2] : g_ws_clients)
+                if (wc2->is_open() &&
+                    (wc2->agent_id == wc.agent_id || wc2->agent_id == to))
+                    wc2->queue_text(ev_str);
+        }
+        return;
+    }
+
+    if (*type == "read_receipt") {
+        uint64_t msg_id  = ws_json::get_u64(json, "message_id");
+        uint64_t from_id = ws_json::get_u64(json, "from");
+        if (msg_id == 0 || from_id == 0) return;
+        std::ostringstream ev;
+        ev << "{\"type\":\"read_receipt\",\"message_id\":" << msg_id
+           << ",\"reader\":" << wc.agent_id << "}";
+        std::string ev_str = ev.str();
+        for (auto& [fd2, wc2] : g_ws_clients)
+            if (wc2->is_open() && wc2->agent_id == from_id)
+                wc2->queue_text(ev_str);
+        return;
+    }
+
+    if (*type == "list_sessions") {
+        std::ostringstream resp;
+        resp << "{\"type\":\"sessions\",\"sessions\":[";
+        bool first = true;
+        for (auto& [fd2, wc2] : g_ws_clients) {
+            if (!wc2->is_open() || wc2->agent_id != wc.agent_id) continue;
+            if (!first) resp << ',';
+            first = false;
+            resp << "{\"fd\":" << fd2
+                 << ",\"name\":\"" << ws_json::esc(wc2->agent_name) << "\""
+                 << ",\"self\":" << (fd2 == wc.fd ? "true" : "false") << "}";
+        }
+        resp << "]}";
+        wc.queue_text(resp.str());
+        return;
+    }
+
+    if (*type == "kick_session") {
+        int target_fd = static_cast<int>(ws_json::get_u64(json, "fd"));
+        if (target_fd == wc.fd) return;
+        auto it = g_ws_clients.find(target_fd);
+        if (it != g_ws_clients.end() && it->second->agent_id == wc.agent_id) {
+            it->second->queue_text("{\"type\":\"kicked\",\"reason\":\"logged out from another device\"}");
+            it->second->queue_close();
+            it->second->flush();
+        }
+        return;
+    }
+
 }
 
 // ── Binary protocol helpers ───────────────────────────────────────────────────

@@ -62,6 +62,10 @@ enum class MessageType : uint8_t {
     SYSTEM         = 0x03,
     AGENT_COMMAND  = 0x04,
     AGENT_RESPONSE = 0x05,
+    DELETE_MESSAGE = 0x06,  ///< Delete a message for all parties
+    READ_RECEIPT   = 0x07,  ///< Mark message(s) as read
+    SESSION_KICK   = 0x08,  ///< Kick a session/device
+    SESSION_LIST   = 0x09,  ///< Request active sessions list
 };
 
 enum class DeliveryStatus : uint8_t {

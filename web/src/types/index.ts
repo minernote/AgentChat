@@ -12,8 +12,15 @@ export interface Message {
   type: MessageType;
   timestamp: number;   // ms since epoch
   replyTo?: number;
-  status?: DeliveryStatus; // delivery/read status
-  signed?: boolean;    // true = Double Ratchet signature verified, false/undefined = transport-only
+  status?: DeliveryStatus;
+  signed?: boolean;    // true = Double Ratchet signature verified
+  deleted?: boolean;   // true = deleted for everyone
+}
+
+export interface SessionInfo {
+  fd: number;          // server-side file descriptor (session identifier)
+  name: string;
+  self: boolean;       // true = current session
 }
 
 export interface Agent {

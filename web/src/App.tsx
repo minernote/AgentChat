@@ -13,8 +13,20 @@ export default function App() {
   const [config, setConfig] = useState<ConnectionConfig | null>(null);
   const [activeTarget, setActiveTarget] = useState<ChatTarget | null>(null);
 
-  const { state, error, agents, channels, sendText, sendChannelText, disconnect, dmMessages, channelMessages } =
-    useAgentChat(
+  const { 
+    state, 
+    error, 
+    agents, 
+    channels, 
+    sessions,
+    sendText, 
+    sendChannelText, 
+    deleteMessage,
+    kickSession,
+    disconnect, 
+    dmMessages, 
+    channelMessages 
+  } = useAgentChat(
       config?.host ?? '',
       config?.port ?? 0,
       config?.agentId ?? 0,
@@ -42,6 +54,15 @@ export default function App() {
     }
   }, [activeTarget, sendText, sendChannelText]);
 
+  const handleDelete = useCallback((msgId: number) => {
+    if (!activeTarget) return;
+    if (activeTarget.kind === 'agent') {
+      deleteMessage(msgId, activeTarget.id);
+    } else {
+      deleteMessage(msgId, undefined, activeTarget.id);
+    }
+  }, [activeTarget, deleteMessage]);
+
   const visibleMessages = activeTarget
     ? activeTarget.kind === 'agent'
       ? dmMessages(activeTarget.id)
@@ -60,7 +81,7 @@ export default function App() {
         <div className={styles.navBadges}>
           <span className={styles.navBadge}>🔒 E2EE Active</span>
           <span className={styles.navBadge}>{agents.filter(a => a.online).length} Agents Online</span>
-          <button onClick={handleDisconnect} className={styles.navBadge} style={{cursor:'pointer', border:'none', background:'#fee2e2', color:'#ef4444'}}>
+          <button onClick={handleDisconnect} className={styles.navBadge} style={{cursor:'pointer', border:'none', background:'rgba(248,113,113,0.15)', color:'#f87171'}}>
             Disconnect
           </button>
         </div>
@@ -76,6 +97,8 @@ export default function App() {
           onSelectTarget={setActiveTarget}
           myId={config.agentId}
           onDisconnect={handleDisconnect}
+          sessions={sessions}
+          onKickSession={kickSession}
         />
         
         <section className={styles.main}>
@@ -83,6 +106,7 @@ export default function App() {
             myId={config.agentId}
             target={activeTarget}
             messages={visibleMessages}
+            onDeleteMessage={handleDelete}
           />
           {activeTarget && (
             <MessageInput onSend={handleSend} placeholder={`Message ${activeTarget.name}...`} />

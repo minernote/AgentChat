@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Settings, LogOut, Hash, Lock, Search, Circle } from 'lucide-react';
-import type { Agent, Channel, ChatTarget } from '../types';
+import { Settings, LogOut, Hash, Lock, Search, Circle, Monitor, X } from 'lucide-react';
+import type { Agent, Channel, ChatTarget, SessionInfo } from '../types';
 import { Identicon } from './Identicon';
 import styles from './Sidebar.module.css';
 
@@ -11,10 +11,13 @@ interface Props {
   activeTarget: ChatTarget | null;
   onSelectTarget: (t: ChatTarget) => void;
   onDisconnect: () => void;
+  sessions: SessionInfo[];
+  onKickSession: (fd: number) => void;
 }
 
-export function Sidebar({ myId, agents, channels, activeTarget, onSelectTarget, onDisconnect }: Props) {
+export function Sidebar({ myId, agents, channels, activeTarget, onSelectTarget, onDisconnect, sessions, onKickSession }: Props) {
   const [showSettings, setShowSettings] = useState(false);
+  const [showSessions, setShowSessions] = useState(false);
   const [search, setSearch] = useState('');
   const peers = agents.filter(a => a.id !== myId);
   const onlineCount = peers.filter(a => a.online).length;
@@ -65,6 +68,22 @@ export function Sidebar({ myId, agents, channels, activeTarget, onSelectTarget, 
             <Circle size={14} />
             <span>Agent #{myId}</span>
           </div>
+          <div className={styles.settingsDivider} />
+          <button className={styles.settingsItemBtn} onClick={() => setShowSessions(!showSessions)}>
+            <Monitor size={14} />
+            <span>Active Sessions ({sessions.length})</span>
+          </button>
+          {showSessions && sessions.map(s => (
+            <div key={s.fd} className={styles.sessionItem}>
+              <Monitor size={12} />
+              <span className={styles.sessionName}>{s.name}{s.self ? ' (this device)' : ''}</span>
+              {!s.self && (
+                <button className={styles.kickBtn} onClick={() => onKickSession(s.fd)} title="Log out this device">
+                  <X size={12} />
+                </button>
+              )}
+            </div>
+          ))}
           <div className={styles.settingsDivider} />
           <button className={styles.logoutBtn} onClick={onDisconnect}>
             <LogOut size={14} />

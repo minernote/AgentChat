@@ -12,9 +12,20 @@ export function useMessages() {
     setMessages(prev => [...prev, m]);
   }, []);
 
+  const deleteMessage = useCallback((msgId: number) => {
+    setMessages(prev => prev.map(m =>
+      m.id === msgId ? { ...m, deleted: true, text: '' } : m
+    ));
+  }, []);
+
+  const markRead = useCallback((msgId: number) => {
+    setMessages(prev => prev.map(m =>
+      m.id === msgId ? { ...m, status: 'read' } : m
+    ));
+  }, []);
+
   const clearMessages = useCallback(() => setMessages([]), []);
 
-  /** Messages for a DM conversation with a specific agent */
   const dmMessages = useCallback(
     (myId: number, peerId: number) =>
       messages.filter(
@@ -25,11 +36,10 @@ export function useMessages() {
     [messages],
   );
 
-  /** Messages for a channel */
   const channelMessages = useCallback(
     (channel: string) => messages.filter(m => m.channel === channel),
     [messages],
   );
 
-  return { messages, addMessage, clearMessages, dmMessages, channelMessages };
+  return { messages, addMessage, deleteMessage, markRead, clearMessages, dmMessages, channelMessages };
 }

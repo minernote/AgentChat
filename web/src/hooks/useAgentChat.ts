@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { Agent, Channel, Message } from '../types';
+import type { Agent, Channel, Message, SessionInfo } from '../types';
 import {
   mkRegister,
   mkMessage,
@@ -24,12 +24,28 @@ export interface UseAgentChatReturn {
   agents: Agent[];
   channels: Channel[];
   messages: Message[];
+  sessions: SessionInfo[];
   sendText: (text: string, to: number) => void;
   sendChannelText: (text: string, channel: string) => void;
   sendSealedMessage: (to: number, ciphertext: string) => void;
+  deleteMessage: (msgId: number, to?: number, channel?: string) => void;
+  listSessions: () => void;
+  kickSession: (fd: number) => void;
   disconnect: () => void;
   dmMessages: (peerId: number) => Message[];
   channelMessages: (channel: string) => Message[];
+}
+
+function mkDeleteMessage(messageId: number, to?: number, channel?: string): string {
+  return JSON.stringify({ type: 'delete_message', message_id: messageId, to: to ?? 0, channel: channel ?? '' });
+}
+
+function mkListSessions(): string {
+  return JSON.stringify({ type: 'list_sessions' });
+}
+
+function mkKickSession(fd: number): string {
+  return JSON.stringify({ type: 'kick_session', fd });
 }
 
 export function useAgentChat(
@@ -43,11 +59,12 @@ export function useAgentChat(
   const [error, setError] = useState<string | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [channels, setChannels] = useState<Channel[]>([]);
+  const [sessions, setSessions] = useState<SessionInfo[]>([]);
 
   const wsRef = useRef<WebSocket | null>(null);
   const pingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const { messages, addMessage, dmMessages: _dmMessages, channelMessages: _channelMessages } =
+  const { messages, addMessage, deleteMessage: _deleteMessage, markRead, dmMessages: _dmMessages, channelMessages: _channelMessages } =
     useMessages();
 
   const dmMessages = useCallback(
@@ -81,6 +98,7 @@ export function useAgentChat(
       setState('connected');
       ws.send(mkRegister(agentId, agentName));
       ws.send(mkListAgents());
+      ws.send(mkListSessions());
       pingIntervalRef.current = setInterval(() => {
         if (ws.readyState === WebSocket.OPEN) ws.send(mkPing());
       }, 25_000);
@@ -104,6 +122,30 @@ export function useAgentChat(
             replyTo: f.reply_to,
             signed: f.signed,
           });
+          // Auto send read receipt for incoming DMs
+          if (f.from && f.from !== agentId && !f.channel && f.id) {
+            ws.send(JSON.stringify({ type: 'read_receipt', message_id: f.id, from: f.from }));
+          }
+          break;
+        }
+        case 'message_deleted': {
+          const f = frame as unknown as { message_id: number; by: number };
+          _deleteMessage(f.message_id);
+          break;
+        }
+        case 'read_receipt': {
+          const f = frame as unknown as { message_id: number; reader: number };
+          markRead(f.message_id);
+          break;
+        }
+        case 'sessions': {
+          const f = frame as unknown as { sessions: SessionInfo[] };
+          setSessions(f.sessions);
+          break;
+        }
+        case 'kicked': {
+          disconnect();
+          setError('You were logged out from another device.');
           break;
         }
         case 'agent_status': {
@@ -159,7 +201,6 @@ export function useAgentChat(
           break;
         }
         case 'sealed_send': {
-          // SEALED_SEND (0x13): from_agent_id stripped by server — sender anonymous by design
           const f = frame as ServerSealedSend;
           addMessage({
             from: 0,
@@ -230,11 +271,30 @@ export function useAgentChat(
   const sendSealedMessage = useCallback(
     (to: number, ciphertext: string) => {
       if (wsRef.current?.readyState !== WebSocket.OPEN) return;
-      // Do NOT optimistically add — sender is anonymous to server log
       wsRef.current.send(mkSealedSend(to, ciphertext));
     },
     [],
   );
+
+  const deleteMessage = useCallback(
+    (msgId: number, to?: number, channel?: string) => {
+      if (wsRef.current?.readyState !== WebSocket.OPEN) return;
+      wsRef.current.send(mkDeleteMessage(msgId, to, channel));
+      _deleteMessage(msgId); // optimistic local delete
+    },
+    [_deleteMessage],
+  );
+
+  const listSessions = useCallback(() => {
+    if (wsRef.current?.readyState !== WebSocket.OPEN) return;
+    wsRef.current.send(mkListSessions());
+  }, []);
+
+  const kickSession = useCallback((fd: number) => {
+    if (wsRef.current?.readyState !== WebSocket.OPEN) return;
+    wsRef.current.send(mkKickSession(fd));
+    setSessions(prev => prev.filter(s => s.fd !== fd));
+  }, []);
 
   return {
     state,
@@ -242,9 +302,13 @@ export function useAgentChat(
     agents,
     channels,
     messages,
+    sessions,
     sendText,
     sendChannelText,
     sendSealedMessage,
+    deleteMessage,
+    listSessions,
+    kickSession,
     disconnect,
     dmMessages,
     channelMessages,
