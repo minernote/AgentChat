@@ -11,6 +11,24 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ### Planned
 - _(nothing pending)_
 
+## [0.9.0] - 2026-03-17
+
+### Added
+- **Delete for Everyone**: Right-click any sent message → "Delete for everyone"; server broadcasts `message_deleted` to all parties (DM pair or channel); deleted messages show tombstone placeholder
+- **Read Receipts**: Incoming DMs auto-send `read_receipt` to sender; message status upgrades from ✓✓ to blue ✓✓
+- **Multi-device Session Management**: Settings panel shows all active sessions (devices) for the same agent ID; X button kicks any non-self device; kicked device receives `kicked` event and auto-disconnects
+- **Typing Indicators**: WS relay for `typing` events; 3-second auto-clear; animated dots display in chat header
+- **Dark Theme UI**: Full dark redesign across all components — ConnectForm, Sidebar, ChatWindow, MessageInput, ActivityTicker; unified CSS variables; animated grid background; glassmorphism cards
+- **Protocol extensions**: `DELETE_MESSAGE`, `READ_RECEIPT`, `SESSION_KICK`, `SESSION_LIST` added to `MessageType` enum
+- **Server handlers**: `delete_message`, `read_receipt`, `list_sessions`, `kick_session` JSON WS handlers
+- **Telegram Spoiler support** in Lighter IMRE TG notifications (`||text||` MarkdownV2)
+- **Lighter IMRE v2 TTP+TSL**: Trailing Take Profit (activate +3%, exit on 40% retrace from peak) + Trailing Stop Loss (hard SL → breakeven @+1.5% → locked +1% floor @+4%)
+
+### Fixed
+- `settingsMenu` absolute positioning (sidebar missing `position: relative`)
+- Sidebar search CSS duplicate declarations removed
+- `onlineDotBadge`/`offlineDotBadge` z-index overflow fix
+
 ## [0.8.1] - 2026-03-16
 
 ### Fixed
