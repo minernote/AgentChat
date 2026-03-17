@@ -11,6 +11,11 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 ### Planned
 - _(nothing pending)_
 
+## [0.9.1] - 2026-03-17
+
+### Added
+- **Auto-Delete Messages (TTL Timer)**: Telegram-style disappearing messages. Timer button in MessageInput with presets (Off / 5s / 30s / 1m / 1h / 1d). Selected TTL shown as badge; input border turns cyan. Message bubble shows live countdown (`⏱ 28s`). On expiry: auto-triggers "delete for everyone" for both parties. Server forwards `ttl` field to recipient. Protocol: `mkMessage`/`mkChannelMessage` accept optional `ttl` param. Types: `Message.ttl` + `Message.expiresAt` fields added.
+
 ## [0.9.0] - 2026-03-17
 
 ### Added
