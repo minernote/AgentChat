@@ -1,75 +1,107 @@
-import { useMemo } from 'react';
+/**
+ * Identicon — deterministic geometric avatar from agent_id.
+ * No dependencies. Pure SVG, ~1 KB rendered.
+ *
+ * Algorithm:
+ *   seed = agent_id  (integer)
+ *   - bg colour : HSL derived from seed
+ *   - 3 shapes  : circle, rect, polygon — each toggled/positioned by different bit groups
+ */
 
-interface Props {
+import React from 'react';
+
+interface IdenticonProps {
   agentId: number;
-  size?: number;
+  size?: number;        // px, default 32
   className?: string;
+  style?: React.CSSProperties;
 }
 
-// Deterministic hash from agent_id
-function hash(n: number): number[] {
-  // Simple LCG-based expand: produce 8 pseudo-random bytes from agent_id
-  const state: number[] = [];
-  let s = (n * 2654435761) >>> 0; // Knuth multiplicative hash
-  for (let i = 0; i < 8; i++) {
-    s = Math.imul(s ^ (s >>> 16), 0x45d9f3b) >>> 0;
-    s = Math.imul(s ^ (s >>> 16), 0x45d9f3b) >>> 0;
-    s = (s ^ (s >>> 16)) >>> 0;
-    state.push(s & 0xff);
-  }
-  return state;
+/** Simple deterministic hash — mixes seed through several rounds */
+function hash(n: number): number {
+  let h = (n ^ 0xdeadbeef) >>> 0;
+  h = Math.imul(h ^ (h >>> 16), 0x45d9f3b) >>> 0;
+  h = Math.imul(h ^ (h >>> 16), 0x45d9f3b) >>> 0;
+  return (h ^ (h >>> 16)) >>> 0;
 }
 
-// Convert hue/sat/light to css hsl
-function hsl(h: number, s: number, l: number) {
-  return `hsl(${h},${s}%,${l}%)`;
+function deriveColors(id: number): [string, string, string] {
+  const h1 = hash(id);
+  const h2 = hash(id + 1337);
+  const h3 = hash(id + 7919);
+
+  const hue1 = h1 % 360;
+  const hue2 = (hue1 + 120 + (h2 % 60)) % 360;
+  const hue3 = (hue1 + 240 + (h3 % 60)) % 360;
+
+  const bg  = `hsl(${hue1},55%,28%)`;
+  const fg1 = `hsl(${hue2},80%,65%)`;
+  const fg2 = `hsl(${hue3},70%,72%)`;
+  return [bg, fg1, fg2];
 }
 
-export function Identicon({ agentId, size = 36, className }: Props) {
-  const svg = useMemo(() => {
-    const h = hash(agentId);
+export const Identicon: React.FC<IdenticonProps> = ({ agentId, size = 32, className, style }) => {
+  const v = hash(agentId);
+  const [bg, fg1, fg2] = deriveColors(agentId);
 
-    // Derive palette: 2 complementary colors
-    const hue1 = (h[0] / 255) * 360;
-    const hue2 = (hue1 + 150 + (h[1] / 255) * 60) % 360;
-    const bg = hsl(hue1, 60, 30);
-    const fg = hsl(hue2, 80, 70);
+  // Normalise coordinates to a 100×100 viewBox
+  const S = 100;
+  const cx = 50;
+  const cy = 50;
 
-    // 5x5 symmetric grid (left half mirrored): bits from h[2..5]
-    // cols 0-1 mirrored to cols 4-3, col 2 center
-    const cells: boolean[] = [];
-    const bits = (h[2] << 24) | (h[3] << 16) | (h[4] << 8) | h[5];
-    for (let row = 0; row < 5; row++) {
-      for (let col = 0; col < 3; col++) {
-        cells[row * 5 + col] = Boolean((bits >> (row * 3 + col)) & 1);
-      }
-      // Mirror
-      cells[row * 5 + 3] = cells[row * 5 + 1];
-      cells[row * 5 + 4] = cells[row * 5 + 0];
-    }
+  // Shape 1 — large circle, offset by bits 0-7
+  const r1 = 22 + (v & 0xf);                       // 22-38
+  const x1 = 20 + ((v >> 4) & 0x1f);              // 20-51
+  const y1 = 20 + ((v >> 9) & 0x1f);              // 20-51
 
-    const cell = size / 5;
-    const rects = cells
-      .map((on, i) => {
-        if (!on) return null;
-        const col = i % 5;
-        const row = Math.floor(i / 5);
-        return `<rect x="${col * cell}" y="${row * cell}" width="${cell}" height="${cell}" fill="${fg}" />`;
-      })
-      .filter(Boolean)
-      .join('');
+  // Shape 2 — rotated rect
+  const rw = 18 + ((v >> 14) & 0x1f);             // 18-49
+  const rh = 10 + ((v >> 19) & 0x0f);             // 10-25
+  const rx2 = 15 + ((v >> 23) & 0x1f);            // 15-46
+  const ry2 = 15 + ((v >> 28) & 0x1f);            // 15-46
+  const rot = ((v >> 16) & 0x7f) * 2;             // 0-254 degrees
 
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-  <rect width="${size}" height="${size}" fill="${bg}" rx="${size * 0.15}" />
-  ${rects}
-</svg>`;
-  }, [agentId, size]);
+  // Shape 3 — triangle / polygon
+  const v2 = hash(agentId ^ 0xf00d);
+  const px = (n: number, s = S) => 10 + (n & 0x3f) % (s - 20);
+  const pts = [
+    [px(v2), px(v2 >> 6)],
+    [px(v2 >> 12), px(v2 >> 18)],
+    [px(v2 >> 24), px(hash(v2) & 0x3f)],
+  ].map(([x, y]) => `${x},${y}`).join(' ');
 
   return (
-    <div
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${S} ${S}`}
       className={className}
-      style={{ width: size, height: size, flexShrink: 0 }}
-      dangerouslySetInnerHTML={{ __html: svg }}
-    />
+      style={{ borderRadius: '50%', flexShrink: 0, ...style }}
+      aria-label={`agent-${agentId}`}
+    >
+      {/* Background */}
+      <rect width={S} height={S} fill={bg} rx={S / 2} />
+
+      {/* Shape 1 — circle */}
+      <circle cx={x1} cy={y1} r={r1} fill={fg1} opacity={0.75} />
+
+      {/* Shape 2 — rotated rect */}
+      <rect
+        x={rx2} y={ry2}
+        width={rw} height={rh}
+        fill={fg2}
+        opacity={0.8}
+        transform={`rotate(${rot} ${cx} ${cy})`}
+        rx={3}
+      />
+
+      {/* Shape 3 — triangle */}
+      <polygon points={pts} fill={fg1} opacity={0.6} />
+
+      {/* Subtle inner ring */}
+      <circle cx={cx} cy={cy} r={S / 2 - 2} fill="none" stroke={fg2} strokeWidth={1.5} opacity={0.3} />
+    </svg>
   );
-}
+};
+
+export default Identicon;
