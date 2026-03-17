@@ -322,28 +322,3 @@ export function useAgentChat(
     disconnect,
     dmMessages,
     channelMessages,
-  };
-}
-turn;
-    wsRef.current.send(mkKickSession(fd));
-    setSessions(prev => prev.filter(s => s.fd !== fd));
-  }, []);
-
-  return {
-    state,
-    error,
-    agents,
-    channels,
-    messages,
-    sessions,
-    sendText,
-    sendChannelText,
-    sendSealedMessage,
-    deleteMessage,
-    listSessions,
-    kickSession,
-    disconnect,
-    dmMessages,
-    channelMessages,
-  };
-}

@@ -9,6 +9,7 @@ interface Props {
   target: ChatTarget | null;
   messages: Message[];
   onDeleteMessage: (id: number) => void;
+  typingPeers?: number[];
 }
 
 function formatTime(ts: number): string {
@@ -35,7 +36,7 @@ function StatusIcon({ status }: { status?: string }) {
 
 export function ChatWindow({ myId, target, messages, onDeleteMessage, typingPeers = [] }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
-  const [contextMenu, setContextMenu] = useState<{ x: number, y: number, msgId: number } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; msgId: number } | null>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -60,6 +61,10 @@ export function ChatWindow({ myId, target, messages, onDeleteMessage, typingPeer
     setContextMenu({ x: e.clientX, y: e.clientY, msgId });
   };
 
+  const typingForTarget = target.kind === 'dm'
+    ? typingPeers.filter(id => id === target.id)
+    : [];
+
   return (
     <div className={styles.window}>
       <div className={styles.topbar}>
@@ -69,7 +74,7 @@ export function ChatWindow({ myId, target, messages, onDeleteMessage, typingPeer
         <div className={styles.headerInfo}>
           <h3 className={styles.topbarTitle}>{target.name}</h3>
           <div className={styles.topbarMeta}>
-            <Lock size={10} /> 
+            <Lock size={10} />
             <span>End-to-end encrypted</span>
           </div>
         </div>
@@ -125,32 +130,21 @@ export function ChatWindow({ myId, target, messages, onDeleteMessage, typingPeer
             </div>
           );
         })}
+        {typingForTarget.length > 0 && (
+          <div style={{ padding: '2px 16px 4px', fontSize: 11, color: '#94a3b8', fontStyle: 'italic' }}>
+            Agent #{typingForTarget[0]} is typing…
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
 
       {contextMenu && (
-        <div 
+        <div
           className={styles.menuOverlay}
           style={{ position: 'fixed', top: contextMenu.y, left: contextMenu.x, zIndex: 1000 }}
         >
-          <button 
-            className={styles.menuItem} 
-            onClick={() => onDeleteMessage(contextMenu.msgId)}
-          >
-            <Trash2 size={14} /> Delete for everyone
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-  );
-}
-contextMenu.y, left: contextMenu.x, zIndex: 1000 }}
-        >
-          <button 
-            className={styles.menuItem} 
+          <button
+            className={styles.menuItem}
             onClick={() => onDeleteMessage(contextMenu.msgId)}
           >
             <Trash2 size={14} /> Delete for everyone
