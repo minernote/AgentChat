@@ -14,7 +14,6 @@ import {
   type ServerAgentStatus,
   type ServerChannelEvent,
   type ServerSealedSend,
-  type ServerTyping,
 } from '../utils/protocol';
 import { useMessages } from './useMessages';
 
@@ -321,6 +320,11 @@ export function useAgentChat(
     kickSession,
     disconnect,
     dmMessages,
+    channelMessages,
+    sendTyping,
+  };
+}
+ dmMessages,
     channelMessages,
     sendTyping,
   };
