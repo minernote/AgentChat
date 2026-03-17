@@ -35,6 +35,7 @@ export interface UseAgentChatReturn {
   disconnect: () => void;
   dmMessages: (peerId: number) => Message[];
   channelMessages: (channel: string) => Message[];
+  sendTyping: (to: number) => void;
 }
 
 function mkDeleteMessage(messageId: number, to?: number, channel?: string): string {
@@ -320,11 +321,6 @@ export function useAgentChat(
     kickSession,
     disconnect,
     dmMessages,
-    channelMessages,
-    sendTyping,
-  };
-}
- dmMessages,
     channelMessages,
     sendTyping,
   };

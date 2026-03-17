@@ -61,8 +61,8 @@ export function ChatWindow({ myId, target, messages, onDeleteMessage, typingPeer
     setContextMenu({ x: e.clientX, y: e.clientY, msgId });
   };
 
-  const typingForTarget = target.kind === 'dm'
-    ? typingPeers.filter(id => id === target.id)
+  const typingForTarget = target.kind === 'agent'
+    ? typingPeers.filter(id => id === (target.id as number))
     : [];
 
   return (
