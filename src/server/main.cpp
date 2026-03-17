@@ -191,6 +191,12 @@ static void handle_ws_message(WsConn& wc, const std::string& json) {
         std::ostringstream ack;
         ack << "{\"type\":\"ack\",\"id\":" << id << "}";
         wc.queue_text(ack.str());
+        // Broadcast online status to all other connected clients
+        std::ostringstream status_ev;
+        status_ev << "{\"type\":\"agent_status\",\"agent_id\":" << id
+                  << ",\"name\":\"" << ws_json::esc(name) << "\""
+                  << ",\"online\":true}";
+        ws_broadcast(status_ev.str());
         ws_push_agent_list();
         return;
     }
@@ -1524,6 +1530,17 @@ int main(int argc, char* argv[]) {
     for (auto& [fd, conn] : clients) {
         flush_send(*conn);  // flush pending send buffer
         ::close(fd);
+    }
+    clients.clear();
+    g_agents.clear();
+
+    mdns_adv.stop();
+    ::close(server_fd);
+    ::close(ws_server_fd);
+    std::cout << "[server] Shutdown complete.\n";
+    return 0;
+}
+ ::close(fd);
     }
     clients.clear();
     g_agents.clear();
