@@ -322,3 +322,6 @@ export function useAgentChat(
     disconnect,
     dmMessages,
     channelMessages,
+    sendTyping,
+  };
+}
