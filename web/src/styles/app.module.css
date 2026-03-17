@@ -4,11 +4,16 @@
   height: 100vh;
   overflow: hidden;
   background: var(--bg-main);
+  /* Subtle grid background */
+  background-image:
+    linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
 }
 
 .topnav {
   height: 52px;
-  background: var(--bg-sidebar);
+  background: rgba(13,17,32,0.9);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -17,12 +22,13 @@
   flex-shrink: 0;
   box-shadow: var(--shadow-sm);
   z-index: 10;
+  backdrop-filter: blur(12px);
 }
 
 .logo {
   width: 30px;
   height: 30px;
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  background: linear-gradient(135deg, #7C3AED, #06B6D4);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -31,27 +37,30 @@
   font-weight: 800;
   font-size: 13px;
   flex-shrink: 0;
+  box-shadow: 0 2px 10px rgba(124,58,237,0.4);
 }
 
 .appName {
   font-size: 15px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #ffffff;
+  letter-spacing: -0.3px;
 }
 
 .navBadges {
   margin-left: auto;
   display: flex;
   gap: 6px;
+  align-items: center;
 }
 
 .navBadge {
-  background: var(--primary-light);
-  border: 1px solid #dde3ff;
+  background: rgba(124,58,237,0.15);
+  border: 1px solid rgba(124,58,237,0.3);
   border-radius: var(--radius-full);
   padding: 3px 10px;
   font-size: 11px;
-  color: var(--primary);
+  color: #a78bfa;
   font-weight: 500;
 }
 

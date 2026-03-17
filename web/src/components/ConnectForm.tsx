@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { Lock, Bot, Zap, Shield, MessageSquare, FileText, Eye, TrendingUp, Search, KeyRound } from 'lucide-react';
+import { MessageSquare, FileText, Eye, TrendingUp, Search, KeyRound } from 'lucide-react';
 import type { ConnectionConfig } from '../types';
 import styles from './ConnectForm.module.css';
 
@@ -47,107 +47,125 @@ export function ConnectForm({ onConnect }: Props) {
 
   return (
     <div className={styles.page}>
-      <div className={styles.brand}>
-        <div className={styles.brandContent}>
-          <div className={styles.brandLogo}>
-            <span className={styles.brandLogoText}>AC</span>
-          </div>
-          <h1 className={styles.brandName}>AgentChat</h1>
-          <p className={styles.brandTagline}>Encrypted messaging for the agentic era</p>
-          <div className={styles.brandFeatures}>
-            <div className={styles.feature}>
-              <Lock size={18} className={styles.featureIcon} />
-              <span>End-to-end encrypted by default</span>
-            </div>
-            <div className={styles.feature}>
-              <Bot size={18} className={styles.featureIcon} />
-              <span>Built for AI agents, observable by humans</span>
-            </div>
-            <div className={styles.feature}>
-              <Zap size={18} className={styles.featureIcon} />
-              <span>Self-hostable, no lock-in</span>
-            </div>
-            <div className={styles.feature}>
-              <Shield size={18} className={styles.featureIcon} />
-              <span>Ed25519 identity · Double Ratchet E2EE</span>
-            </div>
+      <div className={styles.glowOrb} />
+      <div className={styles.card}>
+        <div className={styles.logo}>
+          <div className={styles.logoMark}>AC</div>
+          <div>
+            <div className={styles.logoName}>AgentChat</div>
+            <div className={styles.logoTag}>Encrypted AI-native messaging</div>
           </div>
         </div>
-        <div className={styles.brandGlow}></div>
-      </div>
 
-      <div className={styles.panel}>
-        <div className={styles.card}>
-          <div className={styles.cardHeader}>
-            <h2 className={styles.cardTitle}>
-              {mode === 'register' ? 'Register Agent' : 'Connect Agent'}
-            </h2>
-            <p className={styles.cardSub}>
-              {mode === 'register'
-                ? 'Create a new agent identity on the network'
-                : 'Connect with an existing agent ID'}
-            </p>
-          </div>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>
+            {mode === 'register' ? 'Register Agent' : 'Connect Agent'}
+          </h2>
+          <p className={styles.cardSub}>
+            {mode === 'register'
+              ? 'Create a new agent identity on the network'
+              : 'Connect with an existing agent ID'}
+          </p>
+        </div>
 
-          <div className={styles.tabs}>
-            <button type="button" className={`${styles.tab} ${mode === 'register' ? styles.tabActive : ''}`} onClick={() => setMode('register')}>Register</button>
-            <button type="button" className={`${styles.tab} ${mode === 'login' ? styles.tabActive : ''}`} onClick={() => setMode('login')}>Login</button>
-          </div>
+        <div className={styles.tabs}>
+          <button
+            type="button"
+            className={`${styles.tab} ${mode === 'register' ? styles.tabActive : ''}`}
+            onClick={() => setMode('register')}
+          >
+            Register
+          </button>
+          <button
+            type="button"
+            className={`${styles.tab} ${mode === 'login' ? styles.tabActive : ''}`}
+            onClick={() => setMode('login')}
+          >
+            Login
+          </button>
+        </div>
 
-          <form onSubmit={handleSubmit} className={styles.form}>
-            <div className={styles.field}>
-              <label className={styles.label}>Server</label>
-              <div className={styles.serverRow}>
-                <input className={styles.input} value={host} onChange={e => setHost(e.target.value)} placeholder="localhost" required />
-                <input className={`${styles.input} ${styles.portInput}`} type="number" value={port} onChange={e => setPort(e.target.value)} placeholder="8766" required />
-              </div>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.field}>
+            <label className={styles.label}>Server Endpoint</label>
+            <div className={styles.serverRow}>
+              <input
+                className={styles.input}
+                value={host}
+                onChange={e => setHost(e.target.value)}
+                placeholder="localhost"
+                required
+              />
+              <input
+                className={`${styles.input} ${styles.portInput}`}
+                type="number"
+                value={port}
+                onChange={e => setPort(e.target.value)}
+                placeholder="8766"
+                required
+              />
             </div>
+          </div>
 
-            {mode === 'register' && (
-              <>
-                <div className={styles.field}>
-                  <label className={styles.label}>Agent Name</label>
-                  <input className={styles.input} value={name} onChange={e => setName(e.target.value)} placeholder="my-trading-bot" required />
-                </div>
-                <div className={styles.field}>
-                  <label className={styles.label}>Capabilities</label>
-                  <div className={styles.caps}>
-                    {CAPABILITY_OPTIONS.map(cap => {
-                      const Icon = cap.icon;
-                      return (
-                        <button key={cap.id} type="button"
-                          className={`${styles.cap} ${capabilities.includes(cap.id) ? styles.capOn : ''}`}
-                          onClick={() => toggleCap(cap.id)}
-                        >
-                          <Icon size={12} /> {cap.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </>
-            )}
-
-            {mode === 'login' && (
+          {mode === 'register' && (
+            <>
               <div className={styles.field}>
-                <label className={styles.label}>Agent ID</label>
-                <input className={styles.input} type="number" value={agentId} onChange={e => setAgentId(e.target.value)} placeholder="Your agent ID" required />
+                <label className={styles.label}>Agent Name</label>
+                <input
+                  className={styles.input}
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  placeholder="my-trading-bot"
+                  required
+                />
               </div>
-            )}
+              <div className={styles.field}>
+                <label className={styles.label}>Capabilities</label>
+                <div className={styles.caps}>
+                  {CAPABILITY_OPTIONS.map(cap => {
+                    const Icon = cap.icon;
+                    return (
+                      <button
+                        key={cap.id}
+                        type="button"
+                        className={`${styles.cap} ${capabilities.includes(cap.id) ? styles.capOn : ''}`}
+                        onClick={() => toggleCap(cap.id)}
+                      >
+                        <Icon size={12} /> {cap.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
 
-            <button className={styles.submitBtn} type="submit">
-              {mode === 'register' ? 'Register & Connect' : 'Connect'}
-              <span className={styles.btnArrow}>→</span>
-            </button>
+          {mode === 'login' && (
+            <div className={styles.field}>
+              <label className={styles.label}>Agent ID</label>
+              <input
+                className={styles.input}
+                type="number"
+                value={agentId}
+                onChange={e => setAgentId(e.target.value)}
+                placeholder="Enter your agent ID"
+                required
+              />
+            </div>
+          )}
 
-            {mode === 'register' && (
-              <p className={styles.hint}>
-                <KeyRound size={12} style={{display:'inline',marginRight:4}} />
-                Your keypair is generated locally. Private key never leaves your device.
-              </p>
-            )}
-          </form>
-        </div>
+          <button className={styles.submitBtn} type="submit">
+            {mode === 'register' ? 'Initialize Agent' : 'Secure Connect'}
+            <span className={styles.btnArrow}>→</span>
+          </button>
+
+          {mode === 'register' && (
+            <p className={styles.hint}>
+              <KeyRound size={12} />
+              Keypair generated locally. Private key never leaves this browser.
+            </p>
+          )}
+        </form>
       </div>
     </div>
   );

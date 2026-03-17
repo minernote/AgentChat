@@ -1,169 +1,164 @@
-/* ConnectForm — AgentChat Design System v2 */
-/* Style: AI-Native, Vibrant Block-based */
+/* ConnectForm v3 — matches landing page aesthetic */
+/* Dark, immersive, particle-network feel */
 
 .page {
-  display: flex;
   min-height: 100vh;
-  background: var(--bg-main);
-  overflow: auto;
-}
-
-/* ── Left branding panel ── */
-.brand {
-  width: 45%;
-  background: linear-gradient(135deg, #4C1D95 0%, #7C3AED 50%, #06B6D4 100%);
+  background: #0a0e1a;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 48px;
   position: relative;
   overflow: hidden;
-  flex-shrink: 0;
+  padding: 24px;
 }
 
-.brand::before {
+/* Animated background grid */
+.page::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-}
-
-.brandGlow {
-  position: absolute;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(6,182,212,0.3) 0%, transparent 70%);
-  bottom: -100px;
-  right: -100px;
+  background-image:
+    linear-gradient(rgba(124,58,237,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,58,237,0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  animation: gridShift 20s linear infinite;
   pointer-events: none;
 }
 
-.brandContent {
+@keyframes gridShift {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(48px, 48px); }
+}
+
+/* Glow orbs */
+.page::after {
+  content: '';
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%);
+  top: -200px;
+  right: -200px;
+  pointer-events: none;
+}
+
+.glowOrb {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(6,182,212,0.1) 0%, transparent 70%);
+  bottom: -100px;
+  left: -100px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Main card */
+.card {
   position: relative;
   z-index: 1;
-  color: white;
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(124,58,237,0.2);
+  border-radius: 20px;
+  padding: 36px 32px;
+  backdrop-filter: blur(20px);
+  box-shadow:
+    0 0 40px rgba(124,58,237,0.1),
+    0 20px 60px rgba(0,0,0,0.5);
 }
 
-.brandLogo {
-  width: 64px;
-  height: 64px;
-  background: rgba(255,255,255,0.15);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 24px;
-}
-
-.brandLogoText {
-  font-size: 22px;
-  font-weight: 800;
-  color: white;
-  letter-spacing: -0.5px;
-}
-
-.brandName {
-  font-size: 36px;
-  font-weight: 800;
-  color: white;
-  margin-bottom: 12px;
-  letter-spacing: -1px;
-}
-
-.brandTagline {
-  font-size: 16px;
-  color: rgba(255,255,255,0.75);
-  margin-bottom: 40px;
-  line-height: 1.6;
-}
-
-.brandFeatures {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.feature {
+/* Logo */
+.logo {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: rgba(255,255,255,0.9);
-  font-size: 14px;
-}
-
-.featureIcon {
-  font-size: 18px;
-  flex-shrink: 0;
-}
-
-/* ── Right form panel ── */
-.panel {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 32px;
-  overflow-y: auto;
-}
-
-.card {
-  width: 100%;
-  max-width: 440px;
-}
-
-.cardHeader {
   margin-bottom: 28px;
 }
 
-.cardTitle {
-  font-size: 26px;
+.logoMark {
+  width: 42px;
+  height: 42px;
+  background: linear-gradient(135deg, #7C3AED, #06B6D4);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
   font-weight: 800;
-  color: var(--text-primary);
+  color: white;
   letter-spacing: -0.5px;
-  margin-bottom: 6px;
+  box-shadow: 0 4px 14px rgba(124,58,237,0.4);
+}
+
+.logoName {
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+}
+
+.logoTag {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+/* Header */
+.cardHeader {
+  margin-bottom: 24px;
+}
+
+.cardTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+  margin-bottom: 4px;
 }
 
 .cardSub {
-  font-size: 14px;
-  color: var(--text-muted);
+  font-size: 13px;
+  color: rgba(255,255,255,0.45);
 }
 
 /* Tabs */
 .tabs {
   display: flex;
-  background: var(--primary-light);
-  border-radius: var(--radius-md);
-  padding: 4px;
-  margin-bottom: 28px;
-  gap: 4px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  padding: 3px;
+  margin-bottom: 24px;
+  gap: 3px;
+  border: 1px solid rgba(255,255,255,0.08);
 }
 
 .tab {
   flex: 1;
-  padding: 9px;
+  padding: 8px;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   background: transparent;
-  color: var(--text-muted);
-  font-size: 14px;
+  color: rgba(255,255,255,0.4);
+  font-size: 13px;
   font-weight: 600;
-  transition: all var(--transition);
   cursor: pointer;
+  transition: all 200ms;
 }
 
 .tabActive {
-  background: white;
-  color: var(--primary);
-  box-shadow: var(--shadow-sm);
+  background: rgba(124,58,237,0.3);
+  color: #a78bfa;
+  border: 1px solid rgba(124,58,237,0.4);
 }
 
 /* Form */
 .form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .field {
@@ -173,40 +168,43 @@
 }
 
 .label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .input {
   width: 100%;
-  padding: 12px 16px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-md);
-  background: white;
-  color: var(--text-primary);
+  padding: 11px 14px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.05);
+  color: #ffffff;
   font-size: 14px;
   outline: none;
-  transition: all var(--transition);
+  transition: all 200ms;
   box-sizing: border-box;
 }
 
 .input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
+  border-color: rgba(124,58,237,0.6);
+  background: rgba(124,58,237,0.08);
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
 }
 
 .input::placeholder {
-  color: var(--text-muted);
+  color: rgba(255,255,255,0.2);
 }
 
 .serverRow {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .portInput {
-  width: 100px;
+  width: 90px;
   flex-shrink: 0;
 }
 
@@ -214,66 +212,67 @@
 .caps {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .cap {
-  padding: 6px 14px;
-  border-radius: var(--radius-full);
-  border: 1.5px solid var(--border);
-  background: white;
-  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.4);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all var(--transition);
+  transition: all 200ms;
 }
 
 .cap:hover {
-  border-color: var(--primary);
-  color: var(--primary);
+  border-color: rgba(124,58,237,0.4);
+  color: #a78bfa;
 }
 
 .capOn {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: white;
+  background: rgba(124,58,237,0.2);
+  border-color: rgba(124,58,237,0.5);
+  color: #a78bfa;
 }
 
-/* Submit button — Block-based, bold */
+/* Submit button */
 .submitBtn {
   width: 100%;
-  padding: 14px 24px;
-  background: var(--primary);
+  padding: 13px 24px;
+  background: linear-gradient(135deg, #7C3AED, #06B6D4);
   color: white;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
-  transition: all var(--transition);
+  transition: all 200ms;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 4px 14px rgba(124,58,237,0.35);
+  box-shadow: 0 4px 20px rgba(124,58,237,0.35);
   margin-top: 4px;
 }
 
 .submitBtn:hover {
-  background: var(--primary-dark);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(124,58,237,0.45);
+  box-shadow: 0 6px 28px rgba(124,58,237,0.5);
 }
 
 .submitBtn:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(124,58,237,0.3);
 }
 
 .btnArrow {
-  font-size: 18px;
-  transition: transform var(--transition);
+  font-size: 16px;
+  transition: transform 200ms;
 }
 
 .submitBtn:hover .btnArrow {
@@ -281,16 +280,15 @@
 }
 
 .hint {
-  font-size: 12px;
-  color: var(--text-muted);
+  font-size: 11px;
+  color: rgba(255,255,255,0.25);
   text-align: center;
-  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 
-/* Mobile responsive */
-@media (max-width: 768px) {
-  .page { flex-direction: column; }
-  .brand { width: 100%; min-height: 200px; padding: 32px; }
-  .brandFeatures { display: none; }
-  .panel { padding: 32px 20px; }
+@media (max-width: 480px) {
+  .card { padding: 24px 20px; }
 }
