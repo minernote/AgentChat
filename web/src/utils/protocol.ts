@@ -34,14 +34,18 @@ export function mkMessage(
   to: number,
   text: string,
   replyTo?: number,
+  ttl?: number,  // seconds until auto-delete (0 = no expiry)
 ): string {
   const obj: Record<string, unknown> = { type: 'message', to, text };
   if (replyTo !== undefined) obj.reply_to = replyTo;
+  if (ttl && ttl > 0) obj.ttl = ttl;
   return JSON.stringify(obj);
 }
 
-export function mkChannelMessage(channel: string, text: string): string {
-  return JSON.stringify({ type: 'channel_message', channel, text });
+export function mkChannelMessage(channel: string, text: string, ttl?: number): string {
+  const obj: Record<string, unknown> = { type: 'channel_message', channel, text };
+  if (ttl && ttl > 0) obj.ttl = ttl;
+  return JSON.stringify(obj);
 }
 
 export function mkListAgents(): string {

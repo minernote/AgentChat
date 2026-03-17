@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Lock, ShieldCheck, MoreVertical, Clock, Check, CheckCheck, AlertCircle, Trash2 } from 'lucide-react';
+import { Lock, ShieldCheck, MoreVertical, Clock, Check, CheckCheck, AlertCircle, Trash2, Timer } from 'lucide-react';
 import type { Message, ChatTarget } from '../types';
 import { Identicon } from './Identicon';
 import styles from './ChatWindow.module.css';
@@ -9,6 +9,7 @@ interface Props {
   target: ChatTarget | null;
   messages: Message[];
   onDeleteMessage: (id: number) => void;
+  onAutoExpire: (id: number) => void;
   typingPeers?: number[];
 }
 
@@ -34,7 +35,37 @@ function StatusIcon({ status }: { status?: string }) {
   }
 }
 
-export function ChatWindow({ myId, target, messages, onDeleteMessage, typingPeers = [] }: Props) {
+// Auto-expire countdown hook
+function useCountdown(expiresAt: number | undefined): number | null {
+  const [remaining, setRemaining] = useState<number | null>(
+    expiresAt ? Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000)) : null
+  );
+  useEffect(() => {
+    if (!expiresAt) return;
+    const tick = () => {
+      const r = Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000));
+      setRemaining(r);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [expiresAt]);
+  return remaining;
+}
+
+function AutoDeleteBubble({ msg, isOwn, onExpire }: { msg: Message; isOwn: boolean; onExpire: () => void }) {
+  const remaining = useCountdown(msg.expiresAt);
+  useEffect(() => {
+    if (remaining === 0) onExpire();
+  }, [remaining, onExpire]);
+  return (
+    <span className={isOwn ? styles.ttlCountOwn : styles.ttlCount}>
+      <Timer size={9} /> {remaining !== null ? `${remaining}s` : ''}
+    </span>
+  );
+}
+
+export function ChatWindow({ myId, target, messages, onDeleteMessage, onAutoExpire, typingPeers = [] }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; msgId: number } | null>(null);
 
@@ -123,6 +154,13 @@ export function ChatWindow({ myId, target, messages, onDeleteMessage, typingPeer
                         : <Lock size={10} className={styles.encryptTransport} />}
                       <span className={styles.timestamp}>{formatTime(msg.timestamp)}</span>
                     </div>
+                    {msg.expiresAt && (
+                      <AutoDeleteBubble
+                        msg={msg}
+                        isOwn={isOwn}
+                        onExpire={() => onAutoExpire(msg.id)}
+                      />
+                    )}
                     {isOwn && <StatusIcon status={msg.status} />}
                   </div>
                 </div>

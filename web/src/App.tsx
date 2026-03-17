@@ -107,6 +107,7 @@ export default function App() {
             target={activeTarget}
             messages={visibleMessages}
             onDeleteMessage={handleDelete}
+            onAutoExpire={(id) => handleDelete(id)}
           />
           {activeTarget && (
             <MessageInput onSend={handleSend} placeholder={`Message ${activeTarget.name}...`} />

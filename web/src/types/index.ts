@@ -15,6 +15,8 @@ export interface Message {
   status?: DeliveryStatus;
   signed?: boolean;    // true = Double Ratchet signature verified
   deleted?: boolean;   // true = deleted for everyone
+  ttl?: number;        // seconds until auto-delete (0 = no expiry)
+  expiresAt?: number;  // ms timestamp when message expires
 }
 
 export interface SessionInfo {
