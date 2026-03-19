@@ -46,6 +46,7 @@ add_library(agentchat_core
     src/core/storage/storage.cpp
     src/core/network/mdns.cpp
 )
+set_target_properties(agentchat_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(agentchat_core
     PUBLIC
@@ -68,6 +69,7 @@ target_link_libraries(agentchat_core
 add_library(agentchat_agent STATIC
     src/agent/agent_client.cpp
 )
+set_target_properties(agentchat_agent PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(agentchat_agent
     PUBLIC
