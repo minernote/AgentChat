@@ -27,6 +27,7 @@
 #include <condition_variable>
 #include <csignal>
 #include <cstring>
+#include <sys/wait.h>
 #include <iostream>
 #include <mutex>
 #include <stdexcept>

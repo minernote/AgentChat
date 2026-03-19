@@ -35,6 +35,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <cstring>
 #include <algorithm>
 #include <cstdint>
 #include <functional>

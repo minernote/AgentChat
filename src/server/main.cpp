@@ -1173,7 +1173,7 @@ int main(int argc, char* argv[]) {
     mdns_adv.start();
 
     std::map<int, std::unique_ptr<ClientConn>> clients;
-    size_t total_connections_accepted = 0;  // Task 3: total connection counter
+    [[maybe_unused]] size_t total_connections_accepted = 0;  // Task 3: total connection counter
 
     // Task 3: log max-connections config (default 1024)
     std::cout << "[server] max-connections: 1024\n";
@@ -1471,7 +1471,7 @@ int main(int argc, char* argv[]) {
                                << ",\"online\":false"
                                << ",\"name\":\"" << ws_json::esc(wc.agent_name) << "\"}";
                         // Erase before broadcast so disconnected client doesn't receive it
-                        uint64_t off_id = wc.agent_id;
+                        [[maybe_unused]] uint64_t off_id = wc.agent_id;
                         std::string off_ev = ws_off.str();
                         ::close(fd);
                         g_ws_clients.erase(wit);
