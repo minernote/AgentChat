@@ -1540,14 +1540,3 @@ int main(int argc, char* argv[]) {
     std::cout << "[server] Shutdown complete.\n";
     return 0;
 }
- ::close(fd);
-    }
-    clients.clear();
-    g_agents.clear();
-
-    mdns_adv.stop();
-    ::close(server_fd);
-    ::close(ws_server_fd);
-    std::cout << "[server] Shutdown complete.\n";
-    return 0;
-}
